@@ -39,7 +39,7 @@ namespace nvrhi::validation
         , m_type(queueType)
     {
     }
-    
+
     void CommandListWrapper::error(const std::string& messageText) const
     {
         m_MessageCallback->message(MessageSeverity::Error, messageText.c_str());
@@ -239,7 +239,7 @@ namespace nvrhi::validation
             error(ss.str());
             return;
         }
-        
+
         m_CommandList->clearTextureFloat(t, subresources, clearColor);
     }
 
@@ -318,7 +318,7 @@ namespace nvrhi::validation
     {
         if (!requireOpenState())
             return;
-        
+
         m_CommandList->copyTexture(dest, destSlice, src, srcSlice);
     }
 
@@ -491,18 +491,8 @@ namespace nvrhi::validation
                 continue;
             }
 
-            IBindingLayout* setLayout = sets[index]->getLayout();
-            IBindingLayout* expectedLayout = layouts[index];
             bool setIsBindless = (sets[index]->getDesc() == nullptr);
-            bool expectedBindless = expectedLayout->getBindlessDesc();
-
-            if (!expectedBindless && setLayout != expectedLayout)
-            {
-                std::stringstream ss;
-                ss << "Binding set in slot " << index << " does not match the layout in pipeline slot " << index;
-                error(ss.str());
-                anyErrors = true;
-            }
+            bool expectedBindless = layouts[index]->getBindlessDesc();
 
             if (expectedBindless && !setIsBindless)
             {
@@ -939,7 +929,7 @@ namespace nvrhi::validation
     {
         if (!requireOpenState())
             return;
-        
+
         m_CommandList->setEnableAutomaticBarriers(enable);
     }
 
@@ -1129,7 +1119,7 @@ namespace nvrhi::validation
         m_CommandList->compactBottomLevelAccelStructs();
     }
 
-    void CommandListWrapper::buildOpacityMicromap(rt::IOpacityMicromap* omm, const rt::OpacityMicromapDesc& desc) 
+    void CommandListWrapper::buildOpacityMicromap(rt::IOpacityMicromap* omm, const rt::OpacityMicromapDesc& desc)
     {
         if (!requireOpenState())
             return;
@@ -1160,7 +1150,7 @@ namespace nvrhi::validation
                 error("Cannot perform buildBottomLevelAccelStruct on a top-level AS");
                 return;
             }
-            
+
             for (size_t i = 0; i < numGeometries; i++)
             {
                 const auto& geom = pGeometries[i];
@@ -1421,7 +1411,7 @@ namespace nvrhi::validation
                     error(ss.str());
                     return;
                 }
-                
+
                 for (size_t i = 0; i < numGeometries; i++)
                 {
                     const auto& before = wrapper->buildGeometries[i];
@@ -1582,7 +1572,7 @@ namespace nvrhi::validation
                 return;
 
             const bool allowEmptyInstances = (buildFlags & rt::AccelStructBuildFlags::AllowEmptyInstances) != 0;
-            
+
             for (size_t i = 0; i < numInstances; i++)
             {
                 const auto& instance = pInstances[i];
@@ -1634,7 +1624,7 @@ namespace nvrhi::validation
                     m_MessageCallback->message(MessageSeverity::Warning, ss.str().c_str());
                 }
             }
-            
+
             wrapper->wasBuilt = true;
             wrapper->buildInstances = numInstances;
         }
@@ -1736,5 +1726,5 @@ namespace nvrhi::validation
 
         return true;
     }
-    
+
 } // namespace nvrhi::validation
