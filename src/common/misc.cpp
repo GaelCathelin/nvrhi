@@ -53,7 +53,7 @@ namespace nvrhi
 
         return ret;
     }
-        
+
     TextureSubresourceSet TextureSubresourceSet::resolve(const TextureDesc& desc, bool singleMipLevel) const
     {
         TextureSubresourceSet ret;
@@ -81,7 +81,7 @@ namespace nvrhi
             ret.numArraySlices = ArraySlice(std::max(0u, lastArraySlicePlusOne - baseArraySlice));
             break;
         }
-        default: 
+        default:
             ret.baseArraySlice = 0;
             ret.numArraySlices = 1;
             break;
@@ -101,14 +101,14 @@ namespace nvrhi
         case TextureDimension::Texture2DArray:
         case TextureDimension::TextureCube:
         case TextureDimension::TextureCubeArray:
-        case TextureDimension::Texture2DMSArray: 
+        case TextureDimension::Texture2DMSArray:
             if (baseArraySlice > 0u || baseArraySlice + numArraySlices < desc.arraySize)
                 return false;
         default:
             return true;
         }
     }
-    
+
     BufferRange BufferRange::resolve(const BufferDesc& desc) const
     {
         BufferRange result;
@@ -119,7 +119,7 @@ namespace nvrhi
             result.byteSize = std::min(byteSize, desc.byteSize - result.byteOffset);
         return result;
     }
-    
+
     bool BlendState::RenderTarget::usesConstantColor() const
     {
         return srcBlend == BlendFactor::ConstantColor || srcBlend == BlendFactor::OneMinusConstantColor ||
@@ -138,7 +138,7 @@ namespace nvrhi
 
         return false;
     }
-    
+
     FramebufferInfo::FramebufferInfo(const FramebufferDesc& desc)
     {
         for (size_t i = 0; i < desc.colorAttachments.size(); i++)
@@ -176,6 +176,11 @@ namespace nvrhi
             const TextureDesc& textureDesc = desc.colorAttachments[0].texture->getDesc();
             width = std::max(textureDesc.width >> desc.colorAttachments[0].subresources.baseMipLevel, 1u);
             height = std::max(textureDesc.height >> desc.colorAttachments[0].subresources.baseMipLevel, 1u);
+        }
+        else
+        {
+            width = desc.defaultWidth;
+            height = desc.defaultHeight;
         }
     }
 

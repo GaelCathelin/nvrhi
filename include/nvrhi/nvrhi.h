@@ -1184,6 +1184,8 @@ namespace nvrhi
         static_vector<FramebufferAttachment, c_MaxRenderTargets> colorAttachments;
         FramebufferAttachment depthAttachment;
         FramebufferAttachment shadingRateAttachment;
+        uint32_t defaultWidth = 0;
+        uint32_t defaultHeight = 0;
 
         FramebufferDesc& addColorAttachment(const FramebufferAttachment& a) { colorAttachments.push_back(a); return *this; }
         FramebufferDesc& addColorAttachment(ITexture* texture) { colorAttachments.push_back(FramebufferAttachment().setTexture(texture)); return *this; }
@@ -1194,6 +1196,7 @@ namespace nvrhi
         FramebufferDesc& setShadingRateAttachment(const FramebufferAttachment& d) { shadingRateAttachment = d; return *this; }
         FramebufferDesc& setShadingRateAttachment(ITexture* texture) { shadingRateAttachment = FramebufferAttachment().setTexture(texture); return *this; }
         FramebufferDesc& setShadingRateAttachment(ITexture* texture, TextureSubresourceSet subresources) { shadingRateAttachment = FramebufferAttachment().setTexture(texture).setSubresources(subresources); return *this; }
+        FramebufferDesc& setDefaultSize(const uint32_t width, const uint32_t height) { defaultWidth = width; defaultHeight = height; return *this; }
     };
 
     // Describes the parameters of a framebuffer that can be used to determine if a given framebuffer
