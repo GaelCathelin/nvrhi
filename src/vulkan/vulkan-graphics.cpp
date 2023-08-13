@@ -218,7 +218,7 @@ namespace nvrhi::vulkan
                                                            m_Context.allocationCallbacks,
                                                            &fb->renderPass);
         CHECK_VK_FAIL(res)
-        
+
         // set up the framebuffer object
         auto framebufferInfo = vk::FramebufferCreateInfo()
                                 .setRenderPass(fb->renderPass)
@@ -226,12 +226,12 @@ namespace nvrhi::vulkan
                                 .setPAttachments(attachmentViews.data())
                                 .setWidth(fb->framebufferInfo.width)
                                 .setHeight(fb->framebufferInfo.height)
-                                .setLayers(numArraySlices);
+                                .setLayers(attachmentViews.empty() ? 1 : numArraySlices);
 
         res = m_Context.device.createFramebuffer(&framebufferInfo, m_Context.allocationCallbacks,
                                                &fb->framebuffer);
         CHECK_VK_FAIL(res)
-        
+
         return FramebufferHandle::Create(fb);
     }
 
@@ -328,7 +328,7 @@ namespace nvrhi::vulkan
             assert(specData.data());
 
             shaderStageCreateInfo.setPSpecializationInfo(specInfos.data() + specInfos.size());
-            
+
             auto specInfo = vk::SpecializationInfo()
                 .setPMapEntries(specMapEntries.data() + specMapEntries.size())
                 .setMapEntryCount(static_cast<uint32_t>(shader->specializationConstants.size()))
@@ -365,13 +365,13 @@ namespace nvrhi::vulkan
         vk::Result res;
 
         Framebuffer* fb = checked_cast<Framebuffer*>(_fb);
-        
+
         InputLayout* inputLayout = checked_cast<InputLayout*>(desc.inputLayout.Get());
 
         GraphicsPipeline *pso = new GraphicsPipeline(m_Context);
         pso->desc = desc;
         pso->framebufferInfo = fb->framebufferInfo;
-        
+
         for (const BindingLayoutHandle& _layout : desc.bindingLayouts)
         {
             BindingLayout* layout = checked_cast<BindingLayout*>(_layout.Get());
@@ -411,35 +411,35 @@ namespace nvrhi::vulkan
         // Set up shader stages
         if (desc.VS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(VS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(VS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Vertex;
         }
 
         if (desc.HS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(HS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(HS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Hull;
         }
 
         if (desc.DS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(DS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(DS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Domain;
         }
 
         if (desc.GS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(GS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(GS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Geometry;
         }
 
         if (desc.PS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(PS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(PS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Pixel;
         }
@@ -478,7 +478,7 @@ namespace nvrhi::vulkan
                             .setDepthBiasClamp(rasterState.depthBiasClamp)
                             .setDepthBiasSlopeFactor(rasterState.slopeScaledDepthBias)
                             .setLineWidth(1.0f);
-        
+
         // Conservative raster state
         auto conservativeRasterState = vk::PipelineRasterizationConservativeStateCreateInfoEXT()
             .setConservativeRasterizationMode(vk::ConservativeRasterizationModeEXT::eOverestimate);
@@ -601,7 +601,7 @@ namespace nvrhi::vulkan
                                                      &pso->pipeline);
         ASSERT_VK_OK(res); // for debugging
         CHECK_VK_FAIL(res);
-        
+
         return GraphicsPipelineHandle::Create(pso);
     }
 
