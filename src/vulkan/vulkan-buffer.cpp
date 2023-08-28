@@ -50,19 +50,19 @@ namespace nvrhi::vulkan
 
         if (desc.isVertexBuffer)
             usageFlags |= vk::BufferUsageFlagBits::eVertexBuffer;
-        
+
         if (desc.isIndexBuffer)
             usageFlags |= vk::BufferUsageFlagBits::eIndexBuffer;
-        
+
         if (desc.isDrawIndirectArgs)
             usageFlags |= vk::BufferUsageFlagBits::eIndirectBuffer;
-        
+
         if (desc.isConstantBuffer)
             usageFlags |= vk::BufferUsageFlagBits::eUniformBuffer;
 
         if (desc.structStride != 0 || desc.canHaveUAVs || desc.canHaveRawViews)
             usageFlags |= vk::BufferUsageFlagBits::eStorageBuffer;
-        
+
         if (desc.canHaveTypedViews)
             usageFlags |= vk::BufferUsageFlagBits::eUniformTexelBuffer;
 
@@ -93,7 +93,7 @@ namespace nvrhi::vulkan
             alignment = std::max(alignment, atomSize);
 
             assert((alignment & (alignment - 1)) == 0); // check if it's a power of 2
-            
+
             size = (size + alignment - 1) & ~(alignment - 1);
             buffer->desc.byteSize = size;
 
@@ -171,7 +171,7 @@ namespace nvrhi::vulkan
 
         if (objectType != ObjectTypes::VK_Buffer)
             return nullptr;
-        
+
         Buffer* buffer = new Buffer(m_Context, m_Allocator);
         buffer->buffer = VkBuffer(_buffer.integer);
         buffer->desc = desc;
@@ -235,7 +235,7 @@ namespace nvrhi::vulkan
             state.maxVersion = -1;
             state.initialized = true;
         }
-        
+
         std::array<uint64_t, uint32_t(CommandQueue::Count)> queueCompletionValues = {
             getQueueLastFinishedID(m_Device, CommandQueue::Graphics),
             getQueueLastFinishedID(m_Device, CommandQueue::Compute),
@@ -406,7 +406,7 @@ namespace nvrhi::vulkan
 
         assert(m_CurrentCmdBuf);
 
-        endRenderPass();
+//        endRenderPass();
 
         m_CurrentCmdBuf->referencedResources.push_back(buffer);
 
@@ -415,7 +415,7 @@ namespace nvrhi::vulkan
             assert(destOffsetBytes == 0);
 
             writeVolatileBuffer(buffer, data, dataSize);
-            
+
             return;
         }
 
@@ -550,7 +550,7 @@ namespace nvrhi::vulkan
             case CpuAccessMode::Write:
                 accessFlags = vk::AccessFlagBits::eHostWrite;
                 break;
-                
+
             case CpuAccessMode::None:
             default:
                 utils::InvalidEnum();
@@ -607,7 +607,7 @@ namespace nvrhi::vulkan
 
         if (!buffer->desc.isVirtual)
             return false;
-        
+
         m_Context.device.bindBufferMemory(buffer->buffer, heap->memory, offset);
 
         buffer->heap = heap;
