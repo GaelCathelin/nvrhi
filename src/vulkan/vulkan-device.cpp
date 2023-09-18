@@ -46,7 +46,7 @@ namespace nvrhi::vulkan
         Device* device = new Device(desc);
         return DeviceHandle::Create(device);
     }
-        
+
     Device::Device(const DeviceDesc& desc)
         : m_Context(desc.instance, desc.physicalDevice, desc.device, reinterpret_cast<vk::AllocationCallbacks*>(desc.allocationCallbacks))
         , m_Allocator(m_Context)
@@ -80,7 +80,7 @@ namespace nvrhi::vulkan
             { VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, &m_Context.extensions.buffer_device_address },
             { VK_KHR_RAY_QUERY_EXTENSION_NAME,&m_Context.extensions.KHR_ray_query },
             { VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME, &m_Context.extensions.KHR_ray_tracing_pipeline },
-            { VK_NV_MESH_SHADER_EXTENSION_NAME, &m_Context.extensions.NV_mesh_shader },
+            { VK_EXT_MESH_SHADER_EXTENSION_NAME, &m_Context.extensions.EXT_mesh_shader },
             { VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME, &m_Context.extensions.EXT_conservative_rasterization},
             { VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, &m_Context.extensions.KHR_fragment_shading_rate },
             { VK_EXT_OPACITY_MICROMAP_EXTENSION_NAME, &m_Context.extensions.EXT_opacity_micromap },
@@ -96,7 +96,7 @@ namespace nvrhi::vulkan
                 *(ext->second) = true;
             }
         }
-        
+
         for(size_t i = 0; i < desc.numDeviceExtensions; i++)
         {
             auto ext = extensionStringMap.find(desc.deviceExtensions[i]);
@@ -117,7 +117,7 @@ namespace nvrhi::vulkan
         vk::PhysicalDeviceFragmentShadingRatePropertiesKHR shadingRateProperties;
         vk::PhysicalDeviceOpacityMicromapPropertiesEXT opacityMicromapProperties;
         vk::PhysicalDeviceRayTracingInvocationReorderPropertiesNV nvRayTracingInvocationReorderProperties;
-        
+
         vk::PhysicalDeviceProperties2 deviceProperties2;
 
         if (m_Context.extensions.KHR_acceleration_structure)
@@ -292,7 +292,7 @@ namespace nvrhi::vulkan
         case Feature::ShaderSpecializations:
             return true;
         case Feature::Meshlets:
-            return m_Context.extensions.NV_mesh_shader;
+            return m_Context.extensions.EXT_mesh_shader;
         case Feature::VariableRateShading:
             if (pInfo)
             {
@@ -324,7 +324,7 @@ namespace nvrhi::vulkan
     FormatSupport Device::queryFormatSupport(Format format)
     {
         VkFormat vulkanFormat = convertFormat(format);
-        
+
         vk::FormatProperties props;
         m_Context.physicalDevice.getFormatProperties(vk::Format(vulkanFormat), &props);
 
@@ -337,7 +337,7 @@ namespace nvrhi::vulkan
             // There is no explicit bit in vk::FormatFeatureFlags for index buffers
             result = result | FormatSupport::IndexBuffer;
         }
-        
+
         if (props.bufferFeatures & vk::FormatFeatureFlagBits::eVertexBuffer)
             result = result | FormatSupport::VertexBuffer;
 
@@ -398,7 +398,7 @@ namespace nvrhi::vulkan
 
         return CommandListHandle::Create(cmdList);
     }
-    
+
     uint64_t Device::executeCommandLists(ICommandList* const* pCommandLists, size_t numCommandLists, CommandQueue executionQueue)
     {
         Queue& queue = *m_Queues[uint32_t(executionQueue)];
@@ -426,10 +426,10 @@ namespace nvrhi::vulkan
         case HeapType::DeviceLocal:
             memoryPropertyFlags = vk::MemoryPropertyFlagBits::eDeviceLocal;
             break;
-        case HeapType::Upload: 
+        case HeapType::Upload:
             memoryPropertyFlags = vk::MemoryPropertyFlagBits::eHostVisible;
             break;
-        case HeapType::Readback: 
+        case HeapType::Readback:
             memoryPropertyFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCached;
             break;
         default:

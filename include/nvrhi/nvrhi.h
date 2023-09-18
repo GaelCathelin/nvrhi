@@ -933,6 +933,7 @@ namespace nvrhi
     {
         Solid,
         Wireframe,
+        Point,
 
         // Vulkan names
         Fill = Solid,
@@ -953,7 +954,8 @@ namespace nvrhi
         bool frontCounterClockwise = false;
         bool depthClipEnable = false;
         bool scissorEnable = false;
-        bool multisampleEnable = false;
+        bool sampleShadingEnable = false;
+        bool rasterizerDiscard = false;
         bool antialiasedLineEnable = false;
         int depthBias = 0;
         float depthBiasClamp = 0.f;
@@ -971,6 +973,7 @@ namespace nvrhi
         constexpr RasterState& setFillMode(RasterFillMode value) { fillMode = value; return *this; }
         constexpr RasterState& setFillSolid() { fillMode = RasterFillMode::Solid; return *this; }
         constexpr RasterState& setFillWireframe() { fillMode = RasterFillMode::Wireframe; return *this; }
+        constexpr RasterState& setFillPoint() { fillMode = RasterFillMode::Point; return *this; }
         constexpr RasterState& setCullMode(RasterCullMode value) { cullMode = value; return *this; }
         constexpr RasterState& setCullBack() { cullMode = RasterCullMode::Back; return *this; }
         constexpr RasterState& setCullFront() { cullMode = RasterCullMode::Front; return *this; }
@@ -982,9 +985,12 @@ namespace nvrhi
         constexpr RasterState& setScissorEnable(bool value) { scissorEnable = value; return *this; }
         constexpr RasterState& enableScissor() { scissorEnable = true; return *this; }
         constexpr RasterState& disableScissor() { scissorEnable = false; return *this; }
-        constexpr RasterState& setMultisampleEnable(bool value) { multisampleEnable = value; return *this; }
-        constexpr RasterState& enableMultisample() { multisampleEnable = true; return *this; }
-        constexpr RasterState& disableMultisample() { multisampleEnable = false; return *this; }
+        constexpr RasterState& setSampleShadingEnable(bool value) { sampleShadingEnable = value; return *this; }
+        constexpr RasterState& enableSampleShading() { sampleShadingEnable = true; return *this; }
+        constexpr RasterState& disableSampleShading() { sampleShadingEnable = false; return *this; }
+        constexpr RasterState& setRasterizerDiscardEnable(bool value) { rasterizerDiscard = value; return *this; }
+        constexpr RasterState& enableRasterizerDiscard() { rasterizerDiscard = true; return *this; }
+        constexpr RasterState& disableRasterizerDiscard() { rasterizerDiscard = false; return *this; }
         constexpr RasterState& setAntialiasedLineEnable(bool value) { antialiasedLineEnable = value; return *this; }
         constexpr RasterState& enableAntialiasedLine() { antialiasedLineEnable = true; return *this; }
         constexpr RasterState& disableAntialiasedLine() { antialiasedLineEnable = false; return *this; }
@@ -1126,7 +1132,6 @@ namespace nvrhi
         Color borderColor = 1.f;
         float maxAnisotropy = 1.f;
         float mipBias = 0.f;
-
         bool minFilter = true;
         bool magFilter = true;
         bool mipFilter = true;
@@ -1134,6 +1139,9 @@ namespace nvrhi
         SamplerAddressMode addressV = SamplerAddressMode::Clamp;
         SamplerAddressMode addressW = SamplerAddressMode::Clamp;
         SamplerReductionType reductionType = SamplerReductionType::Standard;
+        ComparisonFunc comparisonFunc = ComparisonFunc::GreaterOrEqual;
+        float minLod = 0.f;
+        float maxLod = std::numeric_limits<float>::max();
 
         SamplerDesc& setBorderColor(const Color& color) { borderColor = color; return *this; }
         SamplerDesc& setMaxAnisotropy(float value) { maxAnisotropy = value; return *this; }
@@ -1147,6 +1155,9 @@ namespace nvrhi
         SamplerDesc& setAddressW(SamplerAddressMode mode) { addressW = mode; return *this; }
         SamplerDesc& setAllAddressModes(SamplerAddressMode mode) { addressU = addressV = addressW = mode; return *this; }
         SamplerDesc& setReductionType(SamplerReductionType type) { reductionType = type; return *this; }
+        SamplerDesc& setComparisonFunc(ComparisonFunc func) { comparisonFunc = func; return *this; }
+        SamplerDesc& setMinLod(float value) { minLod = value; return *this; }
+        SamplerDesc& setMaxLod(float value) { maxLod = value; return *this; }
     };
 
     class ISampler : public IResource
@@ -1486,7 +1497,7 @@ namespace nvrhi
 
         static_assert(sizeof(InstanceDesc) == 64, "sizeof(InstanceDesc) is supposed to be 64 bytes");
 
-        enum class AccelStructBuildFlags : uint8_t
+        enum class AccelStructBuildFlags : uint16_t
         {
             None = 0,
             AllowUpdate = 1,
@@ -1495,6 +1506,7 @@ namespace nvrhi
             PreferFastBuild = 8,
             MinimizeMemory = 0x10,
             PerformUpdate = 0x20,
+            AllowDataAccess = 0x800,
 
             // Removes the errors or warnings that NVRHI validation layer issues when a TLAS
             // includes an instance that points at a NULL BLAS or has a zero instance mask.

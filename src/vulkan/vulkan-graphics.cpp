@@ -466,9 +466,14 @@ namespace nvrhi::vulkan
             .setViewportCount(1)
             .setScissorCount(1);
 
+        auto lineRasterizationState = vk::PipelineRasterizationLineStateCreateInfoEXT(
+            !rasterState.antialiasedLineEnable || blendState.alphaToCoverageEnable || rasterState.sampleShadingEnable ?
+                vk::LineRasterizationModeEXT::eDefault :
+                vk::LineRasterizationModeEXT::eRectangularSmooth);
+
         auto rasterizer = vk::PipelineRasterizationStateCreateInfo()
                             // .setDepthClampEnable(??)
-                            // .setRasterizerDiscardEnable(??)
+                            .setRasterizerDiscardEnable(rasterState.rasterizerDiscard)
                             .setPolygonMode(convertFillMode(rasterState.fillMode))
                             .setCullMode(convertCullMode(rasterState.cullMode))
                             .setFrontFace(rasterState.frontCounterClockwise ?
@@ -477,6 +482,7 @@ namespace nvrhi::vulkan
                             .setDepthBiasConstantFactor(float(rasterState.depthBias))
                             .setDepthBiasClamp(rasterState.depthBiasClamp)
                             .setDepthBiasSlopeFactor(rasterState.slopeScaledDepthBias)
+                            .setPNext(&lineRasterizationState)
                             .setLineWidth(1.0f);
 
         // Conservative raster state
@@ -489,7 +495,9 @@ namespace nvrhi::vulkan
 
         auto multisample = vk::PipelineMultisampleStateCreateInfo()
                             .setRasterizationSamples(vk::SampleCountFlagBits(fb->framebufferInfo.sampleCount))
-                            .setAlphaToCoverageEnable(blendState.alphaToCoverageEnable);
+                            .setAlphaToCoverageEnable(blendState.alphaToCoverageEnable)
+                            .setSampleShadingEnable(rasterState.sampleShadingEnable)
+                            .setMinSampleShading(1.0f);
 
         auto depthStencil = vk::PipelineDepthStencilStateCreateInfo()
                                 .setDepthTestEnable(depthStencilState.depthTestEnable)
