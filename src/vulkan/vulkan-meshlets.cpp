@@ -31,17 +31,17 @@ namespace nvrhi::vulkan
 
     MeshletPipelineHandle Device::createMeshletPipeline(const MeshletPipelineDesc& desc, IFramebuffer* _fb)
     {
-        if (!m_Context.extensions.NV_mesh_shader)
+        if (!m_Context.extensions.EXT_mesh_shader)
             utils::NotSupported();
 
         vk::Result res;
 
         Framebuffer* fb = checked_cast<Framebuffer*>(_fb);
-        
+
         MeshletPipeline *pso = new MeshletPipeline(m_Context);
         pso->desc = desc;
         pso->framebufferInfo = fb->framebufferInfo;
-        
+
         for (const BindingLayoutHandle& _layout : desc.bindingLayouts)
         {
             BindingLayout* layout = checked_cast<BindingLayout*>(_layout.Get());
@@ -77,28 +77,28 @@ namespace nvrhi::vulkan
         // Set up shader stages
         if (desc.AS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(AS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(AS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Vertex;
         }
 
         if (desc.MS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(MS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(MS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Hull;
         }
-        
+
         if (desc.PS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(PS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(PS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Pixel;
         }
 
         auto inputAssembly = vk::PipelineInputAssemblyStateCreateInfo()
             .setTopology(convertPrimitiveTopology(desc.primType));
-        
+
         // fixed function state
         const auto& rasterState = desc.renderState.rasterState;
         const auto& depthStencilState = desc.renderState.depthStencilState;
@@ -110,7 +110,7 @@ namespace nvrhi::vulkan
 
         auto rasterizer = vk::PipelineRasterizationStateCreateInfo()
                             // .setDepthClampEnable(??)
-                            // .setRasterizerDiscardEnable(??)
+                            .setRasterizerDiscardEnable(rasterState.rasterizerDiscard)
                             .setPolygonMode(convertFillMode(rasterState.fillMode))
                             .setCullMode(convertCullMode(rasterState.cullMode))
                             .setFrontFace(rasterState.frontCounterClockwise ?
@@ -120,10 +120,12 @@ namespace nvrhi::vulkan
                             .setDepthBiasClamp(rasterState.depthBiasClamp)
                             .setDepthBiasSlopeFactor(rasterState.slopeScaledDepthBias)
                             .setLineWidth(1.0f);
-        
+
         auto multisample = vk::PipelineMultisampleStateCreateInfo()
                             .setRasterizationSamples(vk::SampleCountFlagBits(fb->framebufferInfo.sampleCount))
-                            .setAlphaToCoverageEnable(blendState.alphaToCoverageEnable);
+                            .setAlphaToCoverageEnable(blendState.alphaToCoverageEnable)
+                            .setSampleShadingEnable(rasterState.sampleShadingEnable)
+                            .setMinSampleShading(1.0f);
 
         auto depthStencil = vk::PipelineDepthStencilStateCreateInfo()
                                 .setDepthTestEnable(depthStencilState.depthTestEnable)
@@ -184,7 +186,7 @@ namespace nvrhi::vulkan
                             .setPAttachments(colorBlendAttachments.data());
 
         pso->usesBlendConstants = blendState.usesConstantColor(uint32_t(fb->desc.colorAttachments.size()));
-        
+
         vk::DynamicState dynamicStates[3] = {
             vk::DynamicState::eViewport,
             vk::DynamicState::eScissor,
@@ -218,7 +220,7 @@ namespace nvrhi::vulkan
                                                      &pso->pipeline);
         ASSERT_VK_OK(res); // for debugging
         CHECK_VK_FAIL(res)
-        
+
         return MeshletPipelineHandle::Create(pso);
     }
 
@@ -330,7 +332,7 @@ namespace nvrhi::vulkan
 
             m_CurrentCmdBuf->cmdBuf.setScissor(0, uint32_t(scissors.size()), scissors.data());
         }
-        
+
         if (pso->usesBlendConstants && (updatePipeline || m_CurrentMeshletState.blendConstantColor != state.blendConstantColor))
         {
             m_CurrentCmdBuf->cmdBuf.setBlendConstants(&state.blendConstantColor.r);
@@ -364,16 +366,9 @@ namespace nvrhi::vulkan
     {
         assert(m_CurrentCmdBuf);
 
-        if (groupsY > 1 || groupsZ > 1)
-        {
-            // only 1D dispatches are supported by Vulkan
-            utils::NotSupported();
-            return;
-        }
-
         updateMeshletVolatileBuffers();
 
-        m_CurrentCmdBuf->cmdBuf.drawMeshTasksNV(groupsX, 0);
+        m_CurrentCmdBuf->cmdBuf.drawMeshTasksEXT(groupsX, groupsY, groupsZ);
     }
 
 } // namespace nvrhi::vulkan

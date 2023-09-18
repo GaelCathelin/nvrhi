@@ -166,7 +166,7 @@ namespace nvrhi::vulkan
             bool buffer_device_address = false; // either KHR_ or Vulkan 1.2 versions
             bool KHR_ray_query = false;
             bool KHR_ray_tracing_pipeline = false;
-            bool NV_mesh_shader = false;
+            bool EXT_mesh_shader = false;
             bool KHR_fragment_shading_rate = false;
             bool EXT_conservative_rasterization = false;
             bool EXT_opacity_micromap = false;
@@ -217,7 +217,7 @@ namespace nvrhi::vulkan
         { }
 
         ~TrackedCommandBuffer();
-    
+
     private:
         const VulkanContext& m_Context;
     };
@@ -324,7 +324,7 @@ namespace nvrhi::vulkan
         ~Heap() override;
 
         HeapDesc desc;
-        
+
         const HeapDesc& getDesc() override { return desc; }
 
     private:
@@ -386,7 +386,7 @@ namespace nvrhi::vulkan
             }
         };
 
-        
+
         TextureDesc desc;
 
         vk::ImageCreateInfo imageInfo;
@@ -396,7 +396,7 @@ namespace nvrhi::vulkan
         HeapHandle heap;
 
         void* sharedHandle = nullptr;
-        
+
         // contains subresource views for this texture
         // note that we only create the views that the app uses, and that multiple views may map to the same subresources
         std::unordered_map<std::tuple<TextureSubresourceSet, TextureSubresourceViewType, TextureDimension, Format>, TextureSubresourceView, Texture::Hash> subresourceViews;
@@ -412,7 +412,7 @@ namespace nvrhi::vulkan
         // (such as an SRV with ImageLayout::eShaderReadOnlyOptimal), but not both, then this specifies which of the two aspect bits is to be set.
         TextureSubresourceView& getSubresourceView(const TextureSubresourceSet& subresources, TextureDimension dimension,
             Format format, TextureSubresourceViewType viewtype = TextureSubresourceViewType::AllAspects);
-        
+
         uint32_t getNumSubresources() const;
         uint32_t getSubresourceIndex(uint32_t mipLevel, uint32_t arrayLayer) const;
 
@@ -472,21 +472,21 @@ namespace nvrhi::vulkan
     structured buffers.
 
     For each version of a buffer, a tracking object is stored in the Buffer::versionTracking
-    array. The object is just a 64-bit word, which contains a bitfield: 
+    array. The object is just a 64-bit word, which contains a bitfield:
 
-        - c_VersionSubmittedFlag means that the version is used in a submitted 
+        - c_VersionSubmittedFlag means that the version is used in a submitted
             command list;
 
-        - (queue & c_VersionQueueMask << c_VersionQueueShift) is the queue index, 
+        - (queue & c_VersionQueueMask << c_VersionQueueShift) is the queue index,
             see nvrhi::CommandQueue for values;
 
-        - (id & c_VersionIDMask) is the instance ID of the command list, either 
-            pending or submitted. If pending, it matches the recordingID field of 
+        - (id & c_VersionIDMask) is the instance ID of the command list, either
+            pending or submitted. If pending, it matches the recordingID field of
             TrackedCommandBuffer, otherwise the submissionID.
 
     When a buffer version is allocated, it is transitioned into the pending state.
     When the command list containing such pending versions is submitted, all the
-    pending versions are transitioned to the submitted state. In the submitted 
+    pending versions are transitioned to the submitted state. In the submitted
     state, they may be reused later if that submitted instance of the command list
     has finished executing, which is determined based on the queue's semaphore.
     Pending versions cannot be reused. Also, pending versions might be transitioned
@@ -507,7 +507,7 @@ namespace nvrhi::vulkan
         int maxVersion = 0;
         bool initialized = false;
     };
-    
+
     // A copyable version of std::atomic to be used in an std::vector
     class BufferVersionItem : public std::atomic<uint64_t>  // NOLINT(cppcoreguidelines-special-member-functions)
     {
@@ -537,7 +537,7 @@ namespace nvrhi::vulkan
         vk::DeviceAddress deviceAddress = 0;
 
         HeapHandle heap;
-        
+
         std::unordered_map<uint64_t, vk::BufferView> viewCache;
 
         std::vector<BufferVersionItem> versionTracking;
@@ -563,7 +563,7 @@ namespace nvrhi::vulkan
         const VulkanContext& m_Context;
         VulkanAllocator& m_Allocator;
     };
-    
+
     struct StagingTextureRegion
     {
         // offset, size in bytes
@@ -592,7 +592,7 @@ namespace nvrhi::vulkan
             assert(size > 0);
             return size;
         }
-        
+
         const TextureDesc& getDesc() const override { return desc; }
     };
 
@@ -620,7 +620,7 @@ namespace nvrhi::vulkan
     {
     public:
         ShaderDesc desc;
-        
+
         vk::ShaderModule shaderModule;
         vk::ShaderStageFlagBits stageFlagBits{};
 
@@ -666,7 +666,7 @@ namespace nvrhi::vulkan
 
         std::vector<vk::VertexInputBindingDescription> bindingDesc;
         std::vector<vk::VertexInputAttributeDescription> attributeDesc;
-        
+
         uint32_t getNumAttributes() const override;
         const VertexAttributeDesc* getAttributeDesc(uint32_t index) const override;
     };
@@ -677,7 +677,7 @@ namespace nvrhi::vulkan
         CommandQueue queue = CommandQueue::Graphics;
         uint64_t commandListID = 0;
     };
-    
+
     class TimerQuery : public RefCounter<ITimerQuery>
     {
     public:
@@ -703,7 +703,7 @@ namespace nvrhi::vulkan
     public:
         FramebufferDesc desc;
         FramebufferInfoEx framebufferInfo;
-        
+
         vk::RenderPass renderPass = vk::RenderPass();
         vk::Framebuffer framebuffer = vk::Framebuffer();
 
@@ -922,7 +922,7 @@ namespace nvrhi::vulkan
             : pipeline(_pipeline)
             , m_Context(context)
         { }
-        
+
         void setRayGenerationShader(const char* exportName, IBindingSet* bindings = nullptr) override;
         int addMissShader(const char* exportName, IBindingSet* bindings = nullptr) override;
         int addHitGroup(const char* exportName, IBindingSet* bindings = nullptr) override;
@@ -1108,7 +1108,7 @@ namespace nvrhi::vulkan
 
         void resizeDescriptorTable(IDescriptorTable* descriptorTable, uint32_t newSize, bool keepContents = true) override;
         bool writeDescriptorTable(IDescriptorTable* descriptorTable, const BindingSetItem& item) override;
-        
+
         rt::OpacityMicromapHandle createOpacityMicromap(const rt::OpacityMicromapDesc& desc) override;
         rt::AccelStructHandle createAccelStruct(const rt::AccelStructDesc& desc) override;
         MemoryRequirements getAccelStructMemoryRequirements(rt::IAccelStruct* as) override;
@@ -1135,7 +1135,7 @@ namespace nvrhi::vulkan
     private:
         VulkanContext m_Context;
         VulkanAllocator m_Allocator;
-        
+
         vk::QueryPool m_TimerQueryPool = nullptr;
         utils::BitSetAllocator m_TimerQueryAllocator;
 
@@ -1143,7 +1143,7 @@ namespace nvrhi::vulkan
 
         // array of submission queues
         std::array<std::unique_ptr<Queue>, uint32_t(CommandQueue::Count)> m_Queues;
-        
+
         void *mapBuffer(IBuffer* b, CpuAccessMode flags, uint64_t offset, size_t size) const;
     };
 
@@ -1197,7 +1197,7 @@ namespace nvrhi::vulkan
 
         void setRayTracingState(const rt::State& state) override;
         void dispatchRays(const rt::DispatchRaysArguments& args) override;
-        
+
         void buildOpacityMicromap(rt::IOpacityMicromap* omm, const rt::OpacityMicromapDesc& desc) override;
         void buildBottomLevelAccelStruct(rt::IAccelStruct* as, const rt::GeometryDesc* pGeometries, size_t numGeometries, rt::AccelStructBuildFlags buildFlags) override;
         void compactBottomLevelAccelStructs() override;
@@ -1216,7 +1216,7 @@ namespace nvrhi::vulkan
 
         void setEnableUavBarriersForTexture(ITexture* texture, bool enableBarriers) override;
         void setEnableUavBarriersForBuffer(IBuffer* buffer, bool enableBarriers) override;
-        
+
         void beginTrackingTextureState(ITexture* texture, TextureSubresourceSet subresources, ResourceStates stateBits) override;
         void beginTrackingBufferState(IBuffer* buffer, ResourceStates stateBits) override;
 
@@ -1270,7 +1270,7 @@ namespace nvrhi::vulkan
 
         std::unique_ptr<UploadManager> m_UploadManager;
         std::unique_ptr<UploadManager> m_ScratchManager;
-        
+
         void clearTexture(ITexture* texture, TextureSubresourceSet subresources, const vk::ClearColorValue& clearValue);
 
         void bindBindingSets(vk::PipelineBindPoint bindPoint, vk::PipelineLayout pipelineLayout, const BindingSetVector& bindings);
@@ -1279,7 +1279,7 @@ namespace nvrhi::vulkan
 
         void trackResourcesAndBarriers(const GraphicsState& state);
         void trackResourcesAndBarriers(const MeshletState& state);
-        
+
         void writeVolatileBuffer(Buffer* buffer, const void* data, size_t dataSize);
         void flushVolatileBufferWrites();
         void submitVolatileBuffers(uint64_t recordingID, uint64_t submittedID);
