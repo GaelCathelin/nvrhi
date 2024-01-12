@@ -753,7 +753,7 @@ namespace nvrhi::validation
         ShaderType::Pixel
     };
 
-    bool DeviceWrapper::validatePipelineBindingLayouts(const static_vector<BindingLayoutHandle, c_MaxBindingLayouts>& bindingLayouts, const std::vector<IShader*>& shaders, GraphicsAPI api) const
+    bool DeviceWrapper::validatePipelineBindingLayouts(const static_vector<BindingLayoutHandle, c_MaxBindingLayouts>& bindingLayouts, const std::vector<IShader*>& shaders) const
     {
         const int numBindingLayouts = int(bindingLayouts.size());
         bool anyErrors = false;
@@ -788,12 +788,8 @@ namespace nvrhi::validation
 
                     if (layoutDesc)
                     {
-                        if (api != GraphicsAPI::VULKAN)
-                        {
-                            // Visibility does not apply to Vulkan
-                            if (!(layoutDesc->visibility & stage))
+                        if (!(layoutDesc->visibility & stage))
                                 continue;
-                        }
 
                         if (layoutDesc->registerSpace != 0)
                         {
@@ -940,6 +936,18 @@ namespace nvrhi::validation
                         pushConstantSize = std::max(pushConstantSize, uint32_t(item.size));
                     }
                 }
+
+                if (layoutDesc->registerSpaceIsDescriptorSet)
+                {
+                    if (uint32_t(layoutIndex) != layoutDesc->registerSpace)
+                    {
+                        std::stringstream errorStream;
+                        errorStream << "Binding layout at index " << layoutIndex << " has registerSpace = " << layoutDesc->registerSpace 
+                            << ". When BindingLayoutDesc.registerSpaceIsDescriptorSet = true, the layout index in the pipeline must match its registerSpace.";
+                        error(errorStream.str());
+                        anyErrors = true;
+                    }
+                }
             }
         }
 
@@ -1041,7 +1049,7 @@ namespace nvrhi::validation
             }
         }
 
-        if (!validatePipelineBindingLayouts(pipelineDesc.bindingLayouts, shaders, m_Device->getGraphicsAPI()))
+        if (!validatePipelineBindingLayouts(pipelineDesc.bindingLayouts, shaders))
             return nullptr;
 
         if (!validateRenderState(pipelineDesc.renderState, fb))
@@ -1060,7 +1068,7 @@ namespace nvrhi::validation
 
         std::vector<IShader*> shaders = { pipelineDesc.CS };
 
-        if (!validatePipelineBindingLayouts(pipelineDesc.bindingLayouts, shaders, m_Device->getGraphicsAPI()))
+        if (!validatePipelineBindingLayouts(pipelineDesc.bindingLayouts, shaders))
             return nullptr;
 
         if (!validateShaderType(ShaderType::Compute, pipelineDesc.CS->getDesc(), "createComputePipeline"))
@@ -1085,7 +1093,7 @@ namespace nvrhi::validation
             }
         }
 
-        if (!validatePipelineBindingLayouts(pipelineDesc.bindingLayouts, shaders, m_Device->getGraphicsAPI()))
+        if (!validatePipelineBindingLayouts(pipelineDesc.bindingLayouts, shaders))
             return nullptr;
 
         if (!validateRenderState(pipelineDesc.renderState, fb))
@@ -1170,11 +1178,13 @@ namespace nvrhi::validation
             anyErrors = true;
         }
 
-        if (m_Device->getGraphicsAPI() != GraphicsAPI::D3D12)
+        const GraphicsAPI graphicsApi = m_Device->getGraphicsAPI();
+        if (!(graphicsApi == GraphicsAPI::D3D12 || graphicsApi == GraphicsAPI::VULKAN && desc.registerSpaceIsDescriptorSet))
         {
             if (desc.registerSpace != 0)
             {
-                errorStream << "Binding layout registerSpace = " << desc.registerSpace << ", which is unsupported by the current backend" << std::endl;
+                errorStream << "Binding layout registerSpace = " << desc.registerSpace << ", which is unsupported by the "
+                    << utils::GraphicsAPIToString(graphicsApi) << " backend" << std::endl;
                 anyErrors = true;
             }
         }
