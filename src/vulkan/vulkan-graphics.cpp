@@ -72,7 +72,7 @@ namespace nvrhi::vulkan
             TextureDimension dimension = getDimensionForFramebuffer(t->desc.dimension, subresources.numArraySlices > 1);
 
             const auto& view = t->getSubresourceView(subresources, dimension, rt.format, vk::ImageUsageFlagBits::eColorAttachment);
-            
+
             vk::RenderingAttachmentInfo& attachmentInfo = fb->colorAttachments.emplace_back();
             attachmentInfo = vk::RenderingAttachmentInfo()
                 .setImageView(view.view)
@@ -113,7 +113,7 @@ namespace nvrhi::vulkan
 
             if (getFormatInfo(texture->desc.format).hasStencil)
                 fb->stencilAttachment = fb->depthAttachment;
-                
+
             fb->resources.push_back(att.texture);
         }
 
@@ -142,7 +142,7 @@ namespace nvrhi::vulkan
 
             fb->resources.push_back(vrsAttachment.texture);
         }
-        
+
         return FramebufferHandle::Create(fb);
     }
 
@@ -187,7 +187,7 @@ namespace nvrhi::vulkan
             assert(specData.data());
 
             shaderStageCreateInfo.setPSpecializationInfo(specInfos.data() + specInfos.size());
-            
+
             auto specInfo = vk::SpecializationInfo()
                 .setPMapEntries(specMapEntries.data() + specMapEntries.size())
                 .setMapEntryCount(static_cast<uint32_t>(shader->specializationConstants.size()))
@@ -262,35 +262,35 @@ namespace nvrhi::vulkan
         // Set up shader stages
         if (desc.VS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(VS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(VS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Vertex;
         }
 
         if (desc.HS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(HS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(HS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Hull;
         }
 
         if (desc.DS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(DS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(DS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Domain;
         }
 
         if (desc.GS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(GS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(GS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Geometry;
         }
 
         if (desc.PS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(PS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(PS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Pixel;
         }
@@ -356,6 +356,28 @@ namespace nvrhi::vulkan
                             .setAlphaToCoverageEnable(blendState.alphaToCoverageEnable)
                             .setSampleShadingEnable(rasterState.sampleShadingEnable)
                             .setMinSampleShading(1.0f);
+
+        vk::PipelineSampleLocationsStateCreateInfoEXT sampleLocationsState;
+        if (rasterState.programmableSamplePositionsEnable)
+        {
+            std::vector<vk::SampleLocationEXT> sampleLocations;
+            for (uint32_t i = 0; i < fbinfo.sampleCount; i++)
+                sampleLocations.push_back(vk::SampleLocationEXT(
+                    rasterState.samplePositionsX[i] / 16.0f,
+                    rasterState.samplePositionsY[i] / 16.0f));
+
+            auto sampleLocationsInfo = vk::SampleLocationsInfoEXT()
+                                        .setSampleLocationGridSize(vk::Extent2D(1, 1))
+                                        .setSampleLocationsCount(fbinfo.sampleCount)
+                                        .setSampleLocationsPerPixel(vk::SampleCountFlagBits(fbinfo.sampleCount))
+                                        .setSampleLocations(sampleLocations);
+
+            sampleLocationsState = vk::PipelineSampleLocationsStateCreateInfoEXT()
+                                    .setSampleLocationsEnable(rasterState.programmableSamplePositionsEnable)
+                                    .setSampleLocationsInfo(sampleLocationsInfo);
+
+            multisample.setPNext(&sampleLocationsState);
+        }
 
         auto depthStencil = vk::PipelineDepthStencilStateCreateInfo()
                                 .setDepthTestEnable(depthStencilState.depthTestEnable)
@@ -458,7 +480,7 @@ namespace nvrhi::vulkan
                                                      &pso->pipeline);
         ASSERT_VK_OK(res); // for debugging
         CHECK_VK_FAIL(res);
-        
+
         return GraphicsPipelineHandle::Create(pso);
     }
 
@@ -466,7 +488,7 @@ namespace nvrhi::vulkan
     {
         if (!fb)
             return nullptr;
-            
+
         return createGraphicsPipeline(desc, fb->getFramebufferInfo());
     }
 
@@ -519,7 +541,7 @@ namespace nvrhi::vulkan
             .setPColorAttachments(framebuffer->colorAttachments.data())
             .setPDepthAttachment(framebuffer->depthAttachment.imageView ? &framebuffer->depthAttachment : nullptr)
             .setPStencilAttachment(framebuffer->stencilAttachment.imageView ? &framebuffer->stencilAttachment : nullptr);
-        
+
         m_CurrentCmdBuf->cmdBuf.beginRendering(renderingInfo);
         m_CurrentCmdBuf->referencedResources.push_back(framebuffer);
     }

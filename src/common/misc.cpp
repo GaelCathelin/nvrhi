@@ -154,6 +154,7 @@ namespace nvrhi
             depthFormat = textureDesc.format;
             sampleCount = textureDesc.sampleCount;
             sampleQuality = textureDesc.sampleQuality;
+            isSampleLocationsCompatible = textureDesc.isSampleLocationsCompatible;
         }
         else if (!desc.colorAttachments.empty() && desc.colorAttachments[0].valid())
         {

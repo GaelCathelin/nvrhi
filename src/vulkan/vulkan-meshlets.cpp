@@ -68,28 +68,28 @@ namespace nvrhi::vulkan
         // Set up shader stages
         if (desc.AS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(AS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(AS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Vertex;
         }
 
         if (desc.MS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(MS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(MS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Hull;
         }
-        
+
         if (desc.PS)
         {
-            shaderStages.push_back(makeShaderStageCreateInfo(PS, 
+            shaderStages.push_back(makeShaderStageCreateInfo(PS,
                 specInfos, specMapEntries, specData));
             pso->shaderMask = pso->shaderMask | ShaderType::Pixel;
         }
 
         auto inputAssembly = vk::PipelineInputAssemblyStateCreateInfo()
             .setTopology(convertPrimitiveTopology(desc.primType));
-        
+
         // fixed function state
         const auto& rasterState = desc.renderState.rasterState;
         const auto& depthStencilState = desc.renderState.depthStencilState;
@@ -139,6 +139,28 @@ namespace nvrhi::vulkan
                             .setSampleShadingEnable(rasterState.sampleShadingEnable)
                             .setMinSampleShading(1.0f);
 
+        vk::PipelineSampleLocationsStateCreateInfoEXT sampleLocationsState;
+        if (rasterState.programmableSamplePositionsEnable)
+        {
+            std::vector<vk::SampleLocationEXT> sampleLocations;
+            for (uint32_t i = 0; i < fbinfo.sampleCount; i++)
+                sampleLocations.push_back(vk::SampleLocationEXT(
+                    rasterState.samplePositionsX[i] / 16.0f,
+                    rasterState.samplePositionsY[i] / 16.0f));
+
+            auto sampleLocationsInfo = vk::SampleLocationsInfoEXT()
+                                        .setSampleLocationGridSize(vk::Extent2D(1, 1))
+                                        .setSampleLocationsCount(fbinfo.sampleCount)
+                                        .setSampleLocationsPerPixel(vk::SampleCountFlagBits(fbinfo.sampleCount))
+                                        .setSampleLocations(sampleLocations);
+
+            sampleLocationsState = vk::PipelineSampleLocationsStateCreateInfoEXT()
+                                    .setSampleLocationsEnable(rasterState.programmableSamplePositionsEnable)
+                                    .setSampleLocationsInfo(sampleLocationsInfo);
+
+            multisample.setPNext(&sampleLocationsState);
+        }
+
         auto depthStencil = vk::PipelineDepthStencilStateCreateInfo()
                                 .setDepthTestEnable(depthStencilState.depthTestEnable)
                                 .setDepthWriteEnable(depthStencilState.depthWriteEnable)
@@ -168,7 +190,7 @@ namespace nvrhi::vulkan
                             .setPAttachments(colorBlendAttachments.data());
 
         pso->usesBlendConstants = blendState.usesConstantColor(uint32_t(fbinfo.colorFormats.size()));
-        
+
         static_vector<vk::DynamicState, 4> dynamicStates = {
             vk::DynamicState::eViewport,
             vk::DynamicState::eScissor
@@ -181,7 +203,7 @@ namespace nvrhi::vulkan
         auto dynamicStateInfo = vk::PipelineDynamicStateCreateInfo()
             .setDynamicStateCount(uint32_t(dynamicStates.size()))
             .setPDynamicStates(dynamicStates.data());
-            
+
         std::array<vk::Format, c_MaxRenderTargets> colorFormats;
         for (size_t i = 0; i < fbinfo.colorFormats.size(); i++)
             colorFormats[i] = vk::Format(convertFormat(fbinfo.colorFormats[i]));
@@ -217,7 +239,7 @@ namespace nvrhi::vulkan
 
         ASSERT_VK_OK(res); // for debugging
         CHECK_VK_FAIL(res)
-        
+
         return MeshletPipelineHandle::Create(pso);
     }
 
@@ -225,7 +247,7 @@ namespace nvrhi::vulkan
     {
         if (!fb)
             return nullptr;
-            
+
         return createMeshletPipeline(desc, fb->getFramebufferInfo());
     }
 
@@ -328,7 +350,7 @@ namespace nvrhi::vulkan
 
             m_CurrentCmdBuf->cmdBuf.setScissor(0, uint32_t(scissors.size()), scissors.data());
         }
-        
+
         if (pso->desc.renderState.depthStencilState.dynamicStencilRef && (updatePipeline || m_CurrentMeshletState.dynamicStencilRefValue != state.dynamicStencilRefValue))
         {
             m_CurrentCmdBuf->cmdBuf.setStencilReference(vk::StencilFaceFlagBits::eFrontAndBack, state.dynamicStencilRefValue);
