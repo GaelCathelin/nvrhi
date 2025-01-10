@@ -53,8 +53,8 @@ namespace nvrhi::vulkan
             return vk::ImageType::e2D;
         }
     }
-    
-    
+
+
     static vk::ImageViewType textureDimensionToImageViewType(TextureDimension dimension)
     {
         switch (dimension)
@@ -64,7 +64,7 @@ namespace nvrhi::vulkan
 
         case TextureDimension::Texture1DArray:
             return vk::ImageViewType::e1DArray;
-            
+
         case TextureDimension::Texture2D:
         case TextureDimension::Texture2DMS:
             return vk::ImageViewType::e2D;
@@ -72,13 +72,13 @@ namespace nvrhi::vulkan
         case TextureDimension::Texture2DArray:
         case TextureDimension::Texture2DMSArray:
             return vk::ImageViewType::e2DArray;
-            
+
         case TextureDimension::TextureCube:
             return vk::ImageViewType::eCube;
-            
+
         case TextureDimension::TextureCubeArray:
             return vk::ImageViewType::eCubeArray;
-            
+
         case TextureDimension::Texture3D:
             return vk::ImageViewType::e3D;
 
@@ -102,10 +102,10 @@ namespace nvrhi::vulkan
     static vk::ImageUsageFlags pickImageUsage(const TextureDesc& d)
     {
         const FormatInfo& formatInfo = getFormatInfo(d.format);
-        
+
         vk::ImageUsageFlags ret = vk::ImageUsageFlagBits::eTransferSrc |
                                   vk::ImageUsageFlagBits::eTransferDst;
-        
+
         if (d.isShaderResource)
             ret |= vk::ImageUsageFlagBits::eSampled;
 
@@ -205,7 +205,7 @@ namespace nvrhi::vulkan
     {
         vk::ImageCreateFlags flags = vk::ImageCreateFlags(0);
 
-        if (d.dimension == TextureDimension::TextureCube || 
+        if (d.dimension == TextureDimension::TextureCube ||
             d.dimension == TextureDimension::TextureCubeArray)
             flags |= vk::ImageCreateFlagBits::eCubeCompatible;
 
@@ -242,7 +242,7 @@ namespace nvrhi::vulkan
                                 .setSharingMode(vk::SharingMode::eExclusive)
                                 .setSamples(sampleCount)
                                 .setFlags(flags);
-        
+
 #if _WIN32
         const auto handleType = vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32;
 #else
@@ -443,7 +443,7 @@ namespace nvrhi::vulkan
                                                 .setLayerCount(dstSubresource.numArraySlices))
                             .setDstOffset(vk::Offset3D(resolvedDstSlice.x, resolvedDstSlice.y, resolvedDstSlice.z))
                             .setExtent(extent);
-        
+
         if (m_EnableAutomaticBarriers)
         {
             requireTextureState(src, TextureSubresourceSet(resolvedSrcSlice.mipLevel, 1, resolvedSrcSlice.arraySlice, 1), ResourceStates::CopySource);
@@ -563,7 +563,7 @@ namespace nvrhi::vulkan
                 .setSrcSubresource(srcLayers)
                 .setDstSubresource(dstLayers)
                 .setExtent(vk::Extent3D(
-                    std::max(dest->desc.width >> dstLayers.mipLevel, 1u), 
+                    std::max(dest->desc.width >> dstLayers.mipLevel, 1u),
                     std::max(dest->desc.height >> dstLayers.mipLevel, 1u),
                     std::max(dest->desc.depth >> dstLayers.mipLevel, 1u))));
         }
@@ -585,7 +585,7 @@ namespace nvrhi::vulkan
         Texture* texture = checked_cast<Texture*>(_texture);
         assert(texture);
         assert(m_CurrentCmdBuf);
-        
+
         subresources = subresources.resolve(texture->desc, false);
 
         if (m_EnableAutomaticBarriers)
@@ -600,7 +600,7 @@ namespace nvrhi::vulkan
             .setLayerCount(subresources.numArraySlices)
             .setBaseMipLevel(subresources.baseMipLevel)
             .setLevelCount(subresources.numMipLevels);
-        
+
         m_CurrentCmdBuf->cmdBuf.clearColorImage(texture->image,
             vk::ImageLayout::eTransferDstOptimal,
             &clearValue,
@@ -627,7 +627,7 @@ namespace nvrhi::vulkan
         Texture* texture = checked_cast<Texture*>(_texture);
         assert(texture);
         assert(m_CurrentCmdBuf);
-        
+
         subresources = subresources.resolve(texture->desc, false);
 
         if (m_EnableAutomaticBarriers)
@@ -688,7 +688,7 @@ namespace nvrhi::vulkan
     {
         switch (objectType)
         {
-        case ObjectTypes::VK_ImageView: 
+        case ObjectTypes::VK_ImageView:
         {
             if (format == Format::UNKNOWN)
                 format = desc.format;
@@ -809,9 +809,9 @@ namespace nvrhi::vulkan
                             .setAnisotropyEnable(anisotropyEnable)
                             .setMaxAnisotropy(anisotropyEnable ? desc.maxAnisotropy : 1.f)
                             .setCompareEnable(desc.reductionType == SamplerReductionType::Comparison)
-                            .setCompareOp(vk::CompareOp::eLess)
-                            .setMinLod(0.f)
-                            .setMaxLod(std::numeric_limits<float>::max())
+                            .setCompareOp(convertCompareOp(desc.comparisonFunc))
+                            .setMinLod(desc.minLod)
+                            .setMaxLod(desc.maxLod)
                             .setBorderColor(pickSamplerBorderColor(desc));
 
         vk::SamplerReductionModeCreateInfoEXT samplerReductionCreateInfo;
@@ -826,7 +826,7 @@ namespace nvrhi::vulkan
 
         const vk::Result res = m_Context.device.createSampler(&sampler->samplerInfo, m_Context.allocationCallbacks, &sampler->sampler);
         CHECK_VK_FAIL(res)
-        
+
         return SamplerHandle::Create(sampler);
     }
 
@@ -841,8 +841,8 @@ namespace nvrhi::vulkan
         }
     }
 
-    Sampler::~Sampler() 
-    { 
+    Sampler::~Sampler()
+    {
         m_Context.device.destroySampler(sampler);
     }
 

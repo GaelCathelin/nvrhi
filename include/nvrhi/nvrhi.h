@@ -206,7 +206,7 @@ namespace nvrhi
         RGBA32_UINT,
         RGBA32_SINT,
         RGBA32_FLOAT,
-        
+
         D16,
         D24S8,
         X24G8_UINT,
@@ -231,7 +231,7 @@ namespace nvrhi
 
         COUNT,
     };
-    
+
     enum class FormatKind : uint8_t
     {
         Integer,
@@ -341,7 +341,7 @@ namespace nvrhi
         Read,
         Write
     };
-    
+
     enum class ResourceStates : uint32_t
     {
         Unknown                     = 0,
@@ -429,7 +429,7 @@ namespace nvrhi
         ResourceStates initialState = ResourceStates::Unknown;
 
         // If keepInitialState is true, command lists that use the texture will automatically
-        // begin tracking the texture from the initial state and transition it to the initial state 
+        // begin tracking the texture from the initial state and transition it to the initial state
         // on command list close.
         bool keepInitialState = false;
 
@@ -484,7 +484,7 @@ namespace nvrhi
     {
         static constexpr MipLevel AllMipLevels = MipLevel(-1);
         static constexpr ArraySlice AllArraySlices = ArraySlice(-1);
-        
+
         MipLevel baseMipLevel = 0;
         MipLevel numMipLevels = 1;
         ArraySlice baseArraySlice = 0;
@@ -575,7 +575,7 @@ namespace nvrhi
         uint32_t numTilesForPackedMips = 0;
         uint32_t startTileIndexInOverallResource = 0;
     };
-    
+
     struct TileShape
     {
         uint32_t widthInTexels = 0;
@@ -618,7 +618,7 @@ namespace nvrhi
     //////////////////////////////////////////////////////////////////////////
     // Input Layout
     //////////////////////////////////////////////////////////////////////////
-    
+
     struct VertexAttributeDesc
     {
         std::string name;
@@ -713,7 +713,7 @@ namespace nvrhi
     {
         uint64_t byteOffset = 0;
         uint64_t byteSize = 0;
-        
+
         BufferRange() = default;
 
         BufferRange(uint64_t _byteOffset, uint64_t _byteSize)
@@ -904,7 +904,7 @@ namespace nvrhi
         OneMinusSrc1Color = InvSrc1Color,
         OneMinusSrc1Alpha = InvSrc1Alpha,
     };
-    
+
     enum class BlendOp : uint8_t
     {
         Add = 1,
@@ -1042,7 +1042,7 @@ namespace nvrhi
         bool quadFillEnable = false;
         char samplePositionsX[16]{};
         char samplePositionsY[16]{};
-        
+
         constexpr RasterState& setFillMode(RasterFillMode value) { fillMode = value; return *this; }
         constexpr RasterState& setFillSolid() { fillMode = RasterFillMode::Solid; return *this; }
         constexpr RasterState& setFillWireframe() { fillMode = RasterFillMode::Wireframe; return *this; }
@@ -1082,7 +1082,7 @@ namespace nvrhi
     //////////////////////////////////////////////////////////////////////////
     // Depth Stencil State
     //////////////////////////////////////////////////////////////////////////
-    
+
     enum class StencilOp : uint8_t
     {
         Keep = 1,
@@ -1149,13 +1149,13 @@ namespace nvrhi
         constexpr DepthStencilState& setFrontFaceStencil(const StencilOpDesc& value) { frontFaceStencil = value; return *this; }
         constexpr DepthStencilState& setBackFaceStencil(const StencilOpDesc& value) { backFaceStencil = value; return *this; }
         constexpr DepthStencilState& setDynamicStencilRef(bool value) { dynamicStencilRef = value; return *this; }
-        
+
     };
 
     //////////////////////////////////////////////////////////////////////////
     // Viewport State
     //////////////////////////////////////////////////////////////////////////
-    
+
     struct ViewportState
     {
         //These are in pixels
@@ -1212,6 +1212,9 @@ namespace nvrhi
         SamplerAddressMode addressV = SamplerAddressMode::Clamp;
         SamplerAddressMode addressW = SamplerAddressMode::Clamp;
         SamplerReductionType reductionType = SamplerReductionType::Standard;
+        ComparisonFunc comparisonFunc = ComparisonFunc::GreaterOrEqual;
+        float minLod = 0.f;
+        float maxLod = std::numeric_limits<float>::max();
 
         SamplerDesc& setBorderColor(const Color& color) { borderColor = color; return *this; }
         SamplerDesc& setMaxAnisotropy(float value) { maxAnisotropy = value; return *this; }
@@ -1225,16 +1228,19 @@ namespace nvrhi
         SamplerDesc& setAddressW(SamplerAddressMode mode) { addressW = mode; return *this; }
         SamplerDesc& setAllAddressModes(SamplerAddressMode mode) { addressU = addressV = addressW = mode; return *this; }
         SamplerDesc& setReductionType(SamplerReductionType type) { reductionType = type; return *this; }
+        SamplerDesc& setComparisonFunc(ComparisonFunc func) { comparisonFunc = func; return *this; }
+        SamplerDesc& setMinLod(float value) { minLod = value; return *this; }
+        SamplerDesc& setMaxLod(float value) { maxLod = value; return *this; }
     };
 
-    class ISampler : public IResource 
-    { 
+    class ISampler : public IResource
+    {
     public:
         [[nodiscard]] virtual const SamplerDesc& getDesc() const = 0;
     };
 
     typedef RefCountPtr<ISampler> SamplerHandle;
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Framebuffer
     //////////////////////////////////////////////////////////////////////////
@@ -1245,7 +1251,7 @@ namespace nvrhi
         TextureSubresourceSet subresources = TextureSubresourceSet(0, 1, 0, 1);
         Format format = Format::UNKNOWN;
         bool isReadOnly = false;
-        
+
         constexpr FramebufferAttachment& setTexture(ITexture* t) { texture = t; return *this; }
         constexpr FramebufferAttachment& setSubresources(TextureSubresourceSet value) { subresources = value; return *this; }
         constexpr FramebufferAttachment& setArraySlice(ArraySlice index) { subresources.baseArraySlice = index; subresources.numArraySlices = 1; return *this; }
@@ -1286,7 +1292,7 @@ namespace nvrhi
 
         FramebufferInfo() = default;
         NVRHI_API FramebufferInfo(const FramebufferDesc& desc);
-        
+
         bool operator==(const FramebufferInfo& other) const
         {
             return formatsEqual(colorFormats, other.colorFormats)
@@ -1322,7 +1328,7 @@ namespace nvrhi
         }
     };
 
-    class IFramebuffer : public IResource 
+    class IFramebuffer : public IResource
     {
     public:
         [[nodiscard]] virtual const FramebufferDesc& getDesc() const = 0;
@@ -1447,7 +1453,7 @@ namespace nvrhi
 
         struct GeometryTriangles
         {
-            IBuffer* indexBuffer = nullptr;   // make sure the first fields in both Triangles 
+            IBuffer* indexBuffer = nullptr;   // make sure the first fields in both Triangles
             IBuffer* vertexBuffer = nullptr;  // and AABBs are IBuffer* for easier debugging
             Format indexFormat = Format::UNKNOWN;
             Format vertexFormat = Format::UNKNOWN;
@@ -1515,7 +1521,7 @@ namespace nvrhi
             GeometryDesc& setTriangles(const GeometryTriangles& value) { geometryData.triangles = value; geometryType = GeometryType::Triangles; return *this; }
             GeometryDesc& setAABBs(const GeometryAABBs& value) { geometryData.aabbs = value; geometryType = GeometryType::AABBs; return *this; }
         };
-        
+
         enum class InstanceFlags : unsigned
         {
             None = 0,
@@ -1639,7 +1645,7 @@ namespace nvrhi
         Count
     };
 
-    
+
     struct BindingLayoutItem
     {
         uint32_t slot;
@@ -1742,7 +1748,7 @@ namespace nvrhi
 
     // Bindless layouts allow applications to attach a descriptor table to an unbounded
     // resource array in the shader. The size of the array is not known ahead of time.
-    // The same table can be bound to multiple register spaces on DX12, in order to 
+    // The same table can be bound to multiple register spaces on DX12, in order to
     // access different types of resources stored in the table through different arrays.
     // The `registerSpaces` vector specifies which spaces will the table be bound to,
     // with the table type (SRV or UAV) derived from the resource type assigned to each space.
@@ -1783,7 +1789,7 @@ namespace nvrhi
         Format format              : 8; // valid for Texture_SRV, Texture_UAV, Buffer_SRV, Buffer_UAV
         uint8_t unused             : 8;
 
-        union 
+        union
         {
             TextureSubresourceSet subresources; // valid for Texture_SRV, Texture_UAV
             BufferRange range; // valid for Buffer_SRV, Buffer_UAV, ConstantBuffer
@@ -2024,9 +2030,9 @@ namespace nvrhi
     struct BindingSetDesc
     {
         BindingSetItemArray bindings;
-       
+
         // Enables automatic liveness tracking of this binding set by nvrhi command lists.
-        // By setting trackLiveness to false, you take the responsibility of not releasing it 
+        // By setting trackLiveness to false, you take the responsibility of not releasing it
         // until all rendering commands using the binding set are finished.
         bool trackLiveness = true;
 
@@ -2166,7 +2172,7 @@ namespace nvrhi
     };
 
     typedef static_vector<BindingLayoutHandle, c_MaxBindingLayouts> BindingLayoutVector;
-    
+
     struct GraphicsPipelineDesc
     {
         PrimitiveType primType = PrimitiveType::TriangleList;
@@ -2183,7 +2189,7 @@ namespace nvrhi
         VariableRateShadingState shadingRateState;
 
         BindingLayoutVector bindingLayouts;
-        
+
         GraphicsPipelineDesc& setPrimType(PrimitiveType value) { primType = value; return *this; }
         GraphicsPipelineDesc& setPatchControlPoints(uint32_t value) { patchControlPoints = value; return *this; }
         GraphicsPipelineDesc& setInputLayout(IInputLayout* value) { inputLayout = value; return *this; }
@@ -2200,7 +2206,7 @@ namespace nvrhi
         GraphicsPipelineDesc& addBindingLayout(IBindingLayout* layout) { bindingLayouts.push_back(layout); return *this; }
     };
 
-    class IGraphicsPipeline : public IResource 
+    class IGraphicsPipeline : public IResource
     {
     public:
         [[nodiscard]] virtual const GraphicsPipelineDesc& getDesc() const = 0;
@@ -2219,7 +2225,7 @@ namespace nvrhi
         ComputePipelineDesc& addBindingLayout(IBindingLayout* layout) { bindingLayouts.push_back(layout); return *this; }
     };
 
-    class IComputePipeline : public IResource 
+    class IComputePipeline : public IResource
     {
     public:
         [[nodiscard]] virtual const ComputePipelineDesc& getDesc() const = 0;
@@ -2230,7 +2236,7 @@ namespace nvrhi
     struct MeshletPipelineDesc
     {
         PrimitiveType primType = PrimitiveType::TriangleList;
-        
+
         ShaderHandle AS;
         ShaderHandle MS;
         ShaderHandle PS;
@@ -2238,7 +2244,7 @@ namespace nvrhi
         RenderState renderState;
 
         BindingLayoutVector bindingLayouts;
-        
+
         MeshletPipelineDesc& setPrimType(PrimitiveType value) { primType = value; return *this; }
         MeshletPipelineDesc& setTaskShader(IShader* value) { AS = value; return *this; }
         MeshletPipelineDesc& setAmplificationShader(IShader* value) { AS = value; return *this; }
@@ -2579,7 +2585,7 @@ namespace nvrhi
         IMessageCallback& operator=(const IMessageCallback&) = delete;
         IMessageCallback& operator=(const IMessageCallback&&) = delete;
     };
-    
+
     class IDevice;
 
     struct CommandListParameters
@@ -2607,7 +2613,7 @@ namespace nvrhi
         CommandListParameters& setScratchMaxMemory(size_t value) { scratchMaxMemory = value; return *this; }
         CommandListParameters& setQueueType(CommandQueue value) { queueType = value; return *this; }
     };
-    
+
     //////////////////////////////////////////////////////////////////////////
     // ICommandList
     //////////////////////////////////////////////////////////////////////////
@@ -2644,7 +2650,7 @@ namespace nvrhi
         virtual void drawIndexed(const DrawArguments& args) = 0;
         virtual void drawIndirect(uint32_t offsetBytes, uint32_t drawCount = 1) = 0;
         virtual void drawIndexedIndirect(uint32_t offsetBytes, uint32_t drawCount = 1) = 0;
-        
+
         virtual void setComputeState(const ComputeState& state) = 0;
         virtual void dispatch(uint32_t groupsX, uint32_t groupsY = 1, uint32_t groupsZ = 1) = 0;
         virtual void dispatchIndirect(uint32_t offsetBytes) = 0;
@@ -2656,7 +2662,7 @@ namespace nvrhi
         virtual void dispatchRays(const rt::DispatchRaysArguments& args) = 0;
 
         virtual void buildOpacityMicromap(rt::IOpacityMicromap* omm, const rt::OpacityMicromapDesc& desc) = 0;
-        
+
         virtual void buildBottomLevelAccelStruct(rt::IAccelStruct* as, const rt::GeometryDesc* pGeometries, size_t numGeometries,
             rt::AccelStructBuildFlags buildFlags = rt::AccelStructBuildFlags::None) = 0;
         virtual void compactBottomLevelAccelStructs() = 0;
@@ -2683,7 +2689,7 @@ namespace nvrhi
 
         // Sets the necessary resource states for all non-permanent resources used in the binding set.
         virtual void setResourceStatesForBindingSet(IBindingSet* bindingSet) = 0;
-        
+
         // Sets the necessary resource states for all targets of the framebuffer.
         NVRHI_API void setResourceStatesForFramebuffer(IFramebuffer* framebuffer);
 
@@ -2755,12 +2761,12 @@ namespace nvrhi
         virtual ShaderHandle createShader(const ShaderDesc& d, const void* binary, size_t binarySize) = 0;
         virtual ShaderHandle createShaderSpecialization(IShader* baseShader, const ShaderSpecialization* constants, uint32_t numConstants) = 0;
         virtual ShaderLibraryHandle createShaderLibrary(const void* binary, size_t binarySize) = 0;
-        
+
         virtual SamplerHandle createSampler(const SamplerDesc& d) = 0;
 
         // Note: vertexShader is only necessary on D3D11, otherwise it may be null
         virtual InputLayoutHandle createInputLayout(const VertexAttributeDesc* d, uint32_t attributeCount, IShader* vertexShader) = 0;
-        
+
         // Event queries
         virtual EventQueryHandle createEventQuery() = 0;
         virtual void setEventQuery(IEventQuery* query, CommandQueue queue) = 0;
@@ -2777,17 +2783,17 @@ namespace nvrhi
 
         // Returns the API kind that the RHI backend is running on top of.
         virtual GraphicsAPI getGraphicsAPI() = 0;
-        
+
         virtual FramebufferHandle createFramebuffer(const FramebufferDesc& desc) = 0;
-        
+
         virtual GraphicsPipelineHandle createGraphicsPipeline(const GraphicsPipelineDesc& desc, IFramebuffer* fb) = 0;
-        
+
         virtual ComputePipelineHandle createComputePipeline(const ComputePipelineDesc& desc) = 0;
 
         virtual MeshletPipelineHandle createMeshletPipeline(const MeshletPipelineDesc& desc, IFramebuffer* fb) = 0;
 
         virtual rt::PipelineHandle createRayTracingPipeline(const rt::PipelineDesc& desc) = 0;
-        
+
         virtual BindingLayoutHandle createBindingLayout(const BindingLayoutDesc& desc) = 0;
         virtual BindingLayoutHandle createBindlessLayout(const BindlessLayoutDesc& desc) = 0;
 
@@ -2801,7 +2807,7 @@ namespace nvrhi
         virtual rt::AccelStructHandle createAccelStruct(const rt::AccelStructDesc& desc) = 0;
         virtual MemoryRequirements getAccelStructMemoryRequirements(rt::IAccelStruct* as) = 0;
         virtual bool bindAccelStructMemory(rt::IAccelStruct* as, IHeap* heap, uint64_t offset) = 0;
-        
+
         virtual CommandListHandle createCommandList(const CommandListParameters& params = CommandListParameters()) = 0;
         virtual uint64_t executeCommandLists(ICommandList* const* pCommandLists, size_t numCommandLists, CommandQueue executionQueue = CommandQueue::Graphics) = 0;
         virtual void queueWaitForCommandList(CommandQueue waitQueue, CommandQueue executionQueue, uint64_t instance) = 0;
