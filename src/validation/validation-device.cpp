@@ -230,10 +230,10 @@ namespace nvrhi::validation
             error(ss.str());
             anyErrors = true;
         }
-        
+
         if(anyErrors)
             return nullptr;
-        
+
         TextureDesc patchedDesc = d;
         if (patchedDesc.debugName.empty())
             patchedDesc.debugName = utils::GenerateTextureDebugName(patchedDesc);
@@ -358,7 +358,7 @@ namespace nvrhi::validation
 
         return m_Device->bindTextureMemory(texture, heap, offset);
     }
-    
+
     TextureHandle DeviceWrapper::createHandleForNativeTexture(ObjectType objectType, Object texture, const TextureDesc& desc)
     {
         return m_Device->createHandleForNativeTexture(objectType, texture, desc);
@@ -388,7 +388,7 @@ namespace nvrhi::validation
         BufferDesc patchedDesc = d;
         if (patchedDesc.debugName.empty())
             patchedDesc.debugName = utils::GenerateBufferDebugName(patchedDesc);
-        
+
         if (d.isVolatile && !d.isConstantBuffer)
         {
             std::stringstream ss;
@@ -544,7 +544,7 @@ namespace nvrhi::validation
     {
         return m_Device->createShader(d, binary, binarySize);
     }
-    
+
     ShaderHandle DeviceWrapper::createShaderSpecialization(IShader* baseShader, const ShaderSpecialization* constants, uint32_t numConstants)
     {
         if (!m_Device->queryFeatureSupport(Feature::ShaderSpecializations))
@@ -575,7 +575,7 @@ namespace nvrhi::validation
     {
         return m_Device->createShaderLibrary(binary, binarySize);
     }
-    
+
     SamplerHandle DeviceWrapper::createSampler(const SamplerDesc& d)
     {
         return m_Device->createSampler(d);
@@ -708,7 +708,7 @@ namespace nvrhi::validation
                     bindingSet.rangeSampler.add(item.slot);
                 }
                 break;
-            
+
             case ResourceType::None:
             case ResourceType::Count:
             default: {
@@ -720,7 +720,7 @@ namespace nvrhi::validation
             }
         }
     }
-    
+
     void BitsetToStream(const sparse_bitset& bits, std::ostream& os, const char* prefix, bool &first)
     {
         for (uint32_t slot : bits)
@@ -759,7 +759,7 @@ namespace nvrhi::validation
         case ShaderType::Domain: return &desc.DS;
         case ShaderType::Geometry: return &desc.GS;
         case ShaderType::Pixel: return &desc.PS;
-        default: 
+        default:
             utils::InvalidEnum();
             return nullptr;
         }
@@ -792,7 +792,7 @@ namespace nvrhi::validation
         ShaderType::Mesh,
         ShaderType::Pixel
     };
-    
+
     bool DeviceWrapper::validatePipelineBindingLayouts(const static_vector<BindingLayoutHandle, c_MaxBindingLayouts>& bindingLayouts, const std::vector<IShader*>& shaders) const
     {
         const int numBindingLayouts = int(bindingLayouts.size());
@@ -833,7 +833,7 @@ namespace nvrhi::validation
 
                         if (layoutDesc->registerSpace != 0)
                         {
-                            continue; // TODO: add support for multiple register spaces. 
+                            continue; // TODO: add support for multiple register spaces.
                                       // Their indices can go up to 0xffffffef, according to the spec, so a vector won't work.
                                       // https://microsoft.github.io/DirectX-Specs/d3d/ResourceBinding.html#note-about-register-space
                         }
@@ -1141,7 +1141,7 @@ namespace nvrhi::validation
         }
 
         std::vector<IShader*> shaders = { pipelineDesc.CS };
-        
+
         if (!validatePipelineBindingLayouts(pipelineDesc.bindingLayouts, shaders))
             return nullptr;
 
@@ -1299,7 +1299,6 @@ namespace nvrhi::validation
         {
             switch (item.type)
             {
-            case ResourceType::Texture_SRV:
             case ResourceType::TypedBuffer_SRV:
             case ResourceType::StructuredBuffer_SRV:
             case ResourceType::RawBuffer_SRV:
@@ -1314,6 +1313,7 @@ namespace nvrhi::validation
                 errorStream << "Volatile CBs cannot be placed into a bindless layout (slot " << item.slot << ")" << std::endl;
                 anyErrors = true;
                 break;
+            case ResourceType::Texture_SRV:
             case ResourceType::Sampler:
                 errorStream << "Bindless samplers are not implemented (slot " << item.slot << ")" << std::endl;
                 anyErrors = true;
@@ -1368,6 +1368,12 @@ namespace nvrhi::validation
             break;
 
         case ResourceType::Texture_SRV:
+            if (binding.samplerHandle == nullptr)
+            {
+                errorStream << "Null resource bindings are not allowed for samplers." << std::endl;
+                return false;
+            }
+
         case ResourceType::Texture_UAV:
         {
             ITexture* texture = checked_cast<ITexture*>(binding.resourceHandle);
@@ -1443,7 +1449,7 @@ namespace nvrhi::validation
             bool isRawView = (binding.type == ResourceType::RawBuffer_SRV) || (binding.type == ResourceType::RawBuffer_UAV);
             bool isUAV = (binding.type == ResourceType::TypedBuffer_UAV) || (binding.type == ResourceType::StructuredBuffer_UAV) || (binding.type == ResourceType::RawBuffer_UAV);
             bool isConstantView = (binding.type == ResourceType::ConstantBuffer) || (binding.type == ResourceType::VolatileConstantBuffer);
-            
+
             if (isTypedView && !desc.canHaveTypedViews)
             {
                 errorStream << "Cannot bind buffer " << utils::DebugNameToString(desc.debugName)
@@ -1654,7 +1660,7 @@ namespace nvrhi::validation
             {
                 const BindingSetItem& setItem = desc.bindings[index];
                 const BindingLayoutItem& layoutItem = layoutDesc->bindings[index];
-                
+
                 if ((setItem.slot != layoutItem.slot) || (setItem.type != layoutItem.type))
                 {
                     errorStream << "Binding set item " << index << " doesn't match layout item " << index << ": "
@@ -1687,7 +1693,7 @@ namespace nvrhi::validation
 
     DescriptorTableHandle DeviceWrapper::createDescriptorTable(IBindingLayout* layout)
     {
-        if (!layout->getBindlessDesc()) 
+        if (!layout->getBindlessDesc())
         {
             error("Descriptor tables can only be created with bindless layouts");
             return nullptr;
@@ -1704,7 +1710,7 @@ namespace nvrhi::validation
     bool DeviceWrapper::writeDescriptorTable(IDescriptorTable* descriptorTable, const BindingSetItem& item)
     {
         std::stringstream errorStream;
-        
+
         if (!validateBindingSetItem(item, true, errorStream))
         {
             error(errorStream.str());
@@ -1772,7 +1778,7 @@ namespace nvrhi::validation
         wrapper->allowUpdate = !!(desc.buildFlags & rt::AccelStructBuildFlags::AllowUpdate);
         wrapper->allowCompaction = !!(desc.buildFlags & rt::AccelStructBuildFlags::AllowCompaction);
         wrapper->maxInstances = desc.topLevelMaxInstances;
-        
+
         return rt::AccelStructHandle::Create(wrapper);
     }
 
@@ -1789,7 +1795,7 @@ namespace nvrhi::validation
             as = wrapper->getUnderlyingObject();
 
         const MemoryRequirements memReq = m_Device->getAccelStructMemoryRequirements(as);
-        
+
         return memReq;
     }
 
@@ -2018,7 +2024,7 @@ namespace nvrhi::validation
         CommandListWrapper* wrapper = new CommandListWrapper(this, commandList, params.enableImmediateExecution, params.queueType);
         return CommandListHandle::Create(wrapper);
     }
-    
+
     uint64_t DeviceWrapper::executeCommandLists(ICommandList* const* pCommandLists, size_t numCommandLists, CommandQueue executionQueue)
     {
         if (numCommandLists == 0)
@@ -2146,7 +2152,7 @@ namespace nvrhi::validation
     {
         if (!resource)
             return nullptr;
-        
+
         AccelStructWrapper* asWrapper = dynamic_cast<AccelStructWrapper*>(resource);
 
         if (asWrapper)
@@ -2156,7 +2162,7 @@ namespace nvrhi::validation
 
         return resource;
     }
-    
+
     std::ostream& operator<<(std::ostream& os, const ShaderBindingSet& set)
     {
         bool first = true;
