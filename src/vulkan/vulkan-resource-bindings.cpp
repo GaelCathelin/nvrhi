@@ -63,7 +63,7 @@ namespace nvrhi::vulkan
             {
             case ResourceType::Texture_SRV:
                 registerOffset = _desc.bindingOffsets.shaderResource;
-                descriptorType = vk::DescriptorType::eSampledImage;
+                descriptorType = vk::DescriptorType::eCombinedImageSampler;
                 break;
 
             case ResourceType::Texture_UAV:
@@ -109,7 +109,7 @@ namespace nvrhi::vulkan
                 break;
 
             case ResourceType::PushConstants:
-                // don't need any descriptors for the push constants, but the vulkanLayoutBindings array 
+                // don't need any descriptors for the push constants, but the vulkanLayoutBindings array
                 // must match the binding layout items for further processing within nvrhi --
                 // so set descriptorCount to 0 instead of skipping it
                 registerOffset = _desc.bindingOffsets.constantBuffer;
@@ -234,7 +234,7 @@ namespace nvrhi::vulkan
     vk::Result BindingLayout::bake()
     {
         // create the descriptor set layout object
-        
+
         auto descriptorSetLayoutInfo = vk::DescriptorSetLayoutCreateInfo()
             .setBindingCount(uint32_t(vulkanLayoutBindings.size()))
             .setPBindings(vulkanLayoutBindings.data());
@@ -325,7 +325,7 @@ namespace nvrhi::vulkan
                                                              m_Context.allocationCallbacks,
                                                              &ret->descriptorPool);
         CHECK_VK_FAIL(res)
-        
+
         // create the descriptor set
         auto descriptorSetAllocInfo = vk::DescriptorSetAllocateInfo()
             .setDescriptorPool(ret->descriptorPool)
@@ -335,7 +335,7 @@ namespace nvrhi::vulkan
         res = m_Context.device.allocateDescriptorSets(&descriptorSetAllocInfo,
             &ret->descriptorSet);
         CHECK_VK_FAIL(res)
-        
+
         // collect all of the descriptor write data
         static_vector<vk::DescriptorImageInfo, c_MaxBindingsPerLayout> descriptorImageInfo;
         static_vector<vk::DescriptorBufferInfo, c_MaxBindingsPerLayout> descriptorBufferInfo;
@@ -382,6 +382,7 @@ namespace nvrhi::vulkan
             case ResourceType::Texture_SRV:
             {
                 const auto texture = checked_cast<Texture *>(binding.resourceHandle);
+                const auto sampler = checked_cast<Sampler *>(binding.samplerHandle);
 
                 const auto subresource = binding.subresources.resolve(texture->desc, false);
                 const auto textureViewType = getTextureViewType(binding.format, texture->desc.format);
@@ -390,7 +391,8 @@ namespace nvrhi::vulkan
                 auto& imageInfo = descriptorImageInfo.emplace_back();
                 imageInfo = vk::DescriptorImageInfo()
                     .setImageView(view.view)
-                    .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+                    .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+                    .setSampler(sampler ? sampler->sampler : nullptr);
 
                 generateWriteDescriptorData(layoutBinding.binding,
                     layoutBinding.descriptorType,
@@ -481,7 +483,7 @@ namespace nvrhi::vulkan
                 if (!buffer->permanentState)
                     ret->bindingsThatNeedTransitions.push_back(static_cast<uint16_t>(bindingIndex));
                 else
-                    verifyPermanentResourceState(buffer->permanentState, 
+                    verifyPermanentResourceState(buffer->permanentState,
                         isUAV ? ResourceStates::UnorderedAccess : ResourceStates::ShaderResource,
                         false, buffer->desc.debugName, m_Context.messageCallback);
             }
@@ -516,7 +518,7 @@ namespace nvrhi::vulkan
                     layoutBinding.descriptorType,
                     nullptr, &bufferInfo, nullptr);
 
-                if (binding.type == ResourceType::VolatileConstantBuffer) 
+                if (binding.type == ResourceType::VolatileConstantBuffer)
                 {
                     assert(buffer->desc.isVolatile);
                     ret->volatileConstantBuffers.push_back(buffer);
@@ -615,7 +617,7 @@ namespace nvrhi::vulkan
     }
 
     DescriptorTableHandle Device::createDescriptorTable(IBindingLayout* _layout)
-    { 
+    {
         BindingLayout* layout = checked_cast<BindingLayout*>(_layout);
 
         DescriptorTable* ret = new DescriptorTable(m_Context);
@@ -727,6 +729,7 @@ namespace nvrhi::vulkan
                 case ResourceType::Texture_SRV:
                 {
                     const auto& texture = checked_cast<Texture*>(binding.resourceHandle);
+                    const auto& sampler = checked_cast<Sampler*>(binding.samplerHandle);
 
                     const auto subresource = binding.subresources.resolve(texture->desc, false);
                     const auto textureViewType = getTextureViewType(binding.format, texture->desc.format);
@@ -735,7 +738,8 @@ namespace nvrhi::vulkan
                     auto& imageInfo = descriptorImageInfo.emplace_back();
                     imageInfo = vk::DescriptorImageInfo()
                         .setImageView(view.view)
-                        .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+                        .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+                        .setSampler(sampler ? sampler->sampler : nullptr);
 
                     generateWriteDescriptorData(layoutBinding.binding,
                         layoutBinding.descriptorType,
