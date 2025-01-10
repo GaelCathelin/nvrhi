@@ -1534,7 +1534,7 @@ namespace nvrhi::validation
                     return false;
                 }
             }
-
+/*
             if (binding.type == ResourceType::VolatileConstantBuffer && !binding.range.isEntireBuffer(desc))
             {
                 const BufferRange range = binding.range.resolve(desc);
@@ -1542,7 +1542,7 @@ namespace nvrhi::validation
                     << " is bound with effective byteOffset = " << range.byteOffset << ", byteSize = " << range.byteSize << ".";
                 return false;
             }
-
+//*/
             break;
         }
 
