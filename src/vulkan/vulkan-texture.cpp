@@ -215,6 +215,13 @@ namespace nvrhi::vulkan
         if (d.isTiled)
             flags |= vk::ImageCreateFlagBits::eSparseBinding | vk::ImageCreateFlagBits::eSparseResidency;
 
+        vk::ImageAspectFlags aspect = guessImageAspectFlags(vk::Format(convertFormat(d.format)));
+        if (d.isSampleLocationsCompatible &&
+            (aspect & (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)) != vk::ImageAspectFlagBits::eNoneKHR)
+        {
+            flags |= vk::ImageCreateFlagBits::eSampleLocationsCompatibleDepthEXT;
+        }
+
         return flags;
     }
 

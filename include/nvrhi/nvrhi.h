@@ -433,6 +433,8 @@ namespace nvrhi
         // on command list close.
         bool keepInitialState = false;
 
+        bool isSampleLocationsCompatible = false; // Must be enabled for depth texture when relocating MSAA samples
+
         constexpr TextureDesc& setWidth(uint32_t value) { width = value; return *this; }
         constexpr TextureDesc& setHeight(uint32_t value) { height = value; return *this; }
         constexpr TextureDesc& setDepth(uint32_t value) { depth = value; return *this; }
@@ -452,6 +454,7 @@ namespace nvrhi
         constexpr TextureDesc& setInitialState(ResourceStates value) { initialState = value; return *this; }
         constexpr TextureDesc& setKeepInitialState(bool value) { keepInitialState = value; return *this; }
         constexpr TextureDesc& setSharedResourceFlags(SharedResourceFlags value) { sharedResourceFlags = value; return *this; }
+        constexpr TextureDesc& setIsSampleLocationsCompatible(bool value) { isSampleLocationsCompatible = value; return *this; }
     };
 
     // describes a 2D section of a single mip level + single slice of a texture
@@ -1303,6 +1306,7 @@ namespace nvrhi
         Format depthFormat = Format::UNKNOWN;
         uint32_t sampleCount = 1;
         uint32_t sampleQuality = 0;
+        bool isSampleLocationsCompatible = false;
 
         FramebufferInfo() = default;
         NVRHI_API FramebufferInfo(const FramebufferDesc& desc);
@@ -1312,7 +1316,8 @@ namespace nvrhi
             return formatsEqual(colorFormats, other.colorFormats)
                 && depthFormat == other.depthFormat
                 && sampleCount == other.sampleCount
-                && sampleQuality == other.sampleQuality;
+                && sampleQuality == other.sampleQuality
+                && isSampleLocationsCompatible == other.isSampleLocationsCompatible;
         }
         bool operator!=(const FramebufferInfo& other) const { return !(*this == other); }
 
@@ -2937,6 +2942,7 @@ namespace std
             nvrhi::hash_combine(hash, s.depthFormat);
             nvrhi::hash_combine(hash, s.sampleCount);
             nvrhi::hash_combine(hash, s.sampleQuality);
+            nvrhi::hash_combine(hash, s.isSampleLocationsCompatible);
             return hash;
         }
     };
