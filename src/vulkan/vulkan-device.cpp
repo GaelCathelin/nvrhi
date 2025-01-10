@@ -89,6 +89,7 @@ namespace nvrhi::vulkan
             { VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, &m_Context.extensions.KHR_synchronization2 },
             { VK_NV_MESH_SHADER_EXTENSION_NAME, &m_Context.extensions.NV_mesh_shader },
             { VK_NV_RAY_TRACING_INVOCATION_REORDER_EXTENSION_NAME, &m_Context.extensions.NV_ray_tracing_invocation_reorder },
+            { VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, &m_Context.extensions.EXT_line_rasterization },
 #if NVRHI_WITH_AFTERMATH
             { VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME, &m_Context.extensions.NV_device_diagnostic_checkpoints },
             { VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME, &m_Context.extensions.NV_device_diagnostics_config }
@@ -354,6 +355,8 @@ namespace nvrhi::vulkan
             return (m_Queues[uint32_t(CommandQueue::Copy)] != nullptr);
         case Feature::ConstantBufferRanges:
             return true;
+        case Feature::LineRasterization:
+            return m_Context.extensions.EXT_line_rasterization;
         default:
             return false;
         }

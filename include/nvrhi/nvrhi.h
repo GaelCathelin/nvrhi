@@ -2793,7 +2793,8 @@ namespace nvrhi
         CopyQueue,
         ConstantBufferRanges,
         HeapDirectlyIndexed,
-        SamplerFeedback
+        SamplerFeedback,
+        LineRasterization
     };
 
     enum class MessageSeverity : uint8_t
