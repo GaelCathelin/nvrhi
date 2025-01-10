@@ -2102,6 +2102,7 @@ namespace nvrhi
     struct BindingSetItem
     {
         IResource* resourceHandle;
+        IResource* samplerHandle; // valid for Texture_SRV
 
         uint32_t slot;
 
@@ -2133,6 +2134,7 @@ namespace nvrhi
         bool operator ==(const BindingSetItem& b) const
         {
             return resourceHandle == b.resourceHandle
+                && samplerHandle == b.samplerHandle
                 && slot == b.slot
                 && type == b.type
                 && dimension == b.dimension
@@ -2159,6 +2161,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::None;
             result.resourceHandle = nullptr;
+            result.samplerHandle = nullptr;
             result.format = Format::UNKNOWN;
             result.dimension = TextureDimension::Unknown;
             result.rawData[0] = 0;
@@ -2168,7 +2171,7 @@ namespace nvrhi
             return result;
         }
 
-        static BindingSetItem Texture_SRV(uint32_t slot, ITexture* texture, Format format = Format::UNKNOWN,
+        static BindingSetItem Texture_SRV(uint32_t slot, ITexture* texture, ISampler* sampler, Format format = Format::UNKNOWN,
             TextureSubresourceSet subresources = AllSubresources, TextureDimension dimension = TextureDimension::Unknown)
         {
             BindingSetItem result;
@@ -2176,6 +2179,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::Texture_SRV;
             result.resourceHandle = texture;
+            result.samplerHandle = sampler;
             result.format = format;
             result.dimension = dimension;
             result.subresources = subresources;
@@ -2193,6 +2197,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::Texture_UAV;
             result.resourceHandle = texture;
+            result.samplerHandle = nullptr;
             result.format = format;
             result.dimension = dimension;
             result.subresources = subresources;
@@ -2208,6 +2213,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::TypedBuffer_SRV;
             result.resourceHandle = buffer;
+            result.samplerHandle = nullptr;
             result.format = format;
             result.dimension = TextureDimension::Unknown;
             result.range = range;
@@ -2223,6 +2229,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::TypedBuffer_UAV;
             result.resourceHandle = buffer;
+            result.samplerHandle = nullptr;
             result.format = format;
             result.dimension = TextureDimension::Unknown;
             result.range = range;
@@ -2240,6 +2247,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = isVolatile ? ResourceType::VolatileConstantBuffer : ResourceType::ConstantBuffer;
             result.resourceHandle = buffer;
+            result.samplerHandle = nullptr;
             result.format = Format::UNKNOWN;
             result.dimension = TextureDimension::Unknown;
             result.range = range;
@@ -2255,6 +2263,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::Sampler;
             result.resourceHandle = sampler;
+            result.samplerHandle = nullptr;
             result.format = Format::UNKNOWN;
             result.dimension = TextureDimension::Unknown;
             result.rawData[0] = 0;
@@ -2271,6 +2280,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::RayTracingAccelStruct;
             result.resourceHandle = as;
+            result.samplerHandle = nullptr;
             result.format = Format::UNKNOWN;
             result.dimension = TextureDimension::Unknown;
             result.rawData[0] = 0;
@@ -2287,6 +2297,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::StructuredBuffer_SRV;
             result.resourceHandle = buffer;
+            result.samplerHandle = nullptr;
             result.format = format;
             result.dimension = TextureDimension::Unknown;
             result.range = range;
@@ -2302,6 +2313,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::StructuredBuffer_UAV;
             result.resourceHandle = buffer;
+            result.samplerHandle = nullptr;
             result.format = format;
             result.dimension = TextureDimension::Unknown;
             result.range = range;
@@ -2317,6 +2329,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::RawBuffer_SRV;
             result.resourceHandle = buffer;
+            result.samplerHandle = nullptr;
             result.format = Format::UNKNOWN;
             result.dimension = TextureDimension::Unknown;
             result.range = range;
@@ -2332,6 +2345,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::RawBuffer_UAV;
             result.resourceHandle = buffer;
+            result.samplerHandle = nullptr;
             result.format = Format::UNKNOWN;
             result.dimension = TextureDimension::Unknown;
             result.range = range;
@@ -2347,6 +2361,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::PushConstants;
             result.resourceHandle = nullptr;
+            result.samplerHandle = nullptr;
             result.format = Format::UNKNOWN;
             result.dimension = TextureDimension::Unknown;
             result.range.byteOffset = 0;
@@ -2363,6 +2378,7 @@ namespace nvrhi
             result.arrayElement = 0;
             result.type = ResourceType::SamplerFeedbackTexture_UAV;
             result.resourceHandle = texture;
+            result.samplerHandle = nullptr;
             result.format = Format::UNKNOWN;
             result.dimension = TextureDimension::Unknown;
             result.subresources = AllSubresources;
@@ -2379,7 +2395,7 @@ namespace nvrhi
     };
 
     // verify the packing of BindingSetItem for good alignment
-    static_assert(sizeof(BindingSetItem) == 40, "sizeof(BindingSetItem) is supposed to be 40 bytes");
+    static_assert(sizeof(BindingSetItem) == 48, "sizeof(BindingSetItem) is supposed to be 48 bytes");
 
     // Describes a set of bindings corresponding to one binidng layout
     struct BindingSetDesc

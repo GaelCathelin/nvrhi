@@ -842,7 +842,7 @@ namespace nvrhi::vulkan
         switch (type)
         {
         case ResourceType::Texture_SRV:
-            return vk::DescriptorType::eSampledImage;
+            return vk::DescriptorType::eCombinedImageSampler;
 
         case ResourceType::Texture_UAV:
             return vk::DescriptorType::eStorageImage;
