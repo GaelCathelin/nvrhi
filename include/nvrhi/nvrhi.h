@@ -2104,6 +2104,7 @@ namespace nvrhi
     {
         PointList,
         LineList,
+        LineStrip,
         TriangleList,
         TriangleStrip,
         TriangleFan,
