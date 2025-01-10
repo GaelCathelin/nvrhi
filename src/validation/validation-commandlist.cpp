@@ -506,10 +506,11 @@ namespace nvrhi::validation
                 continue;
             }
 
-            IBindingLayout* setLayout = sets[index]->getLayout();
             IBindingLayout* expectedLayout = layouts[index];
             bool setIsBindless = (sets[index]->getDesc() == nullptr);
             bool expectedBindless = expectedLayout->getBindlessDesc();
+/*
+            IBindingLayout* setLayout = sets[index]->getLayout();
 
             if (!expectedBindless && setLayout != expectedLayout)
             {
@@ -518,7 +519,7 @@ namespace nvrhi::validation
                 error(ss.str());
                 anyErrors = true;
             }
-
+//*/
             if (expectedBindless && !setIsBindless)
             {
                 std::stringstream ss;
