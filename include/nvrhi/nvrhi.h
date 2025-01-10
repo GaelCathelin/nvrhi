@@ -1075,7 +1075,10 @@ namespace nvrhi
         bool quadFillEnable = false;
         char samplePositionsX[16]{};
         char samplePositionsY[16]{};
-        
+
+        bool sampleShadingEnable = false;
+        bool rasterizerDiscard = false;
+
         constexpr RasterState& setFillMode(RasterFillMode value) { fillMode = value; return *this; }
         constexpr RasterState& setFillSolid() { fillMode = RasterFillMode::Solid; return *this; }
         constexpr RasterState& setFillWireframe() { fillMode = RasterFillMode::Wireframe; return *this; }
@@ -1110,6 +1113,12 @@ namespace nvrhi
         constexpr RasterState& enableQuadFill() { quadFillEnable = true; return *this; }
         constexpr RasterState& disableQuadFill() { quadFillEnable = false; return *this; }
         constexpr RasterState& setSamplePositions(const char* x, const char* y, int count) { for (int i = 0; i < count; i++) { samplePositionsX[i] = x[i]; samplePositionsY[i] = y[i]; } return *this; }
+        constexpr RasterState& setSampleShadingEnable(bool value) { sampleShadingEnable = value; return *this; }
+        constexpr RasterState& enableSampleShading() { sampleShadingEnable = true; return *this; }
+        constexpr RasterState& disableSampleShading() { sampleShadingEnable = false; return *this; }
+        constexpr RasterState& setRasterizerDiscardEnable(bool value) { rasterizerDiscard = value; return *this; }
+        constexpr RasterState& enableRasterizerDiscard() { rasterizerDiscard = true; return *this; }
+        constexpr RasterState& disableRasterizerDiscard() { rasterizerDiscard = false; return *this; }
     };
 
     //////////////////////////////////////////////////////////////////////////

@@ -101,7 +101,7 @@ namespace nvrhi::vulkan
 
         auto rasterizer = vk::PipelineRasterizationStateCreateInfo()
                             // .setDepthClampEnable(??)
-                            // .setRasterizerDiscardEnable(??)
+                            .setRasterizerDiscardEnable(rasterState.rasterizerDiscard)
                             .setPolygonMode(convertFillMode(rasterState.fillMode))
                             .setCullMode(convertCullMode(rasterState.cullMode))
                             .setFrontFace(rasterState.frontCounterClockwise ?
@@ -111,10 +111,12 @@ namespace nvrhi::vulkan
                             .setDepthBiasClamp(rasterState.depthBiasClamp)
                             .setDepthBiasSlopeFactor(rasterState.slopeScaledDepthBias)
                             .setLineWidth(1.0f);
-        
+
         auto multisample = vk::PipelineMultisampleStateCreateInfo()
                             .setRasterizationSamples(vk::SampleCountFlagBits(fbinfo.sampleCount))
-                            .setAlphaToCoverageEnable(blendState.alphaToCoverageEnable);
+                            .setAlphaToCoverageEnable(blendState.alphaToCoverageEnable)
+                            .setSampleShadingEnable(rasterState.sampleShadingEnable)
+                            .setMinSampleShading(1.0f);
 
         auto depthStencil = vk::PipelineDepthStencilStateCreateInfo()
                                 .setDepthTestEnable(depthStencilState.depthTestEnable)
