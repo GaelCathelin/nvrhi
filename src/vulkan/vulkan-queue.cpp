@@ -65,7 +65,7 @@ namespace nvrhi::vulkan
 
         res = m_Context.device.createCommandPool(&cmdPoolInfo, m_Context.allocationCallbacks, &ret->cmdPool);
         CHECK_VK_FAIL(res)
-        
+
         // allocate command buffer
         auto allocInfo = vk::CommandBufferAllocateInfo()
                             .setLevel(vk::CommandBufferLevel::ePrimary)
@@ -143,7 +143,7 @@ namespace nvrhi::vulkan
                 buffer->lastUseCommandListID = m_LastSubmittedID;
             }
         }
-        
+
         m_SignalSemaphores.push_back(trackingSemaphore);
         m_SignalSemaphoreValues.push_back(m_LastSubmittedID);
 
@@ -151,7 +151,7 @@ namespace nvrhi::vulkan
             .setSignalSemaphoreValueCount(uint32_t(m_SignalSemaphoreValues.size()))
             .setPSignalSemaphoreValues(m_SignalSemaphoreValues.data());
 
-        if (!m_WaitSemaphoreValues.empty()) 
+        if (!m_WaitSemaphoreValues.empty())
         {
             timelineSemaphoreInfo.setWaitSemaphoreValueCount(uint32_t(m_WaitSemaphoreValues.size()));
             timelineSemaphoreInfo.setPWaitSemaphoreValues(m_WaitSemaphoreValues.data());
@@ -170,7 +170,7 @@ namespace nvrhi::vulkan
         try {
             m_Queue.submit(submitInfo);
         }
-        catch (vk::DeviceLostError e)
+        catch (vk::DeviceLostError &e)
         {
             m_Context.messageCallback->message(MessageSeverity::Error, "Device Removed!");
         }
@@ -179,7 +179,7 @@ namespace nvrhi::vulkan
         m_WaitSemaphoreValues.clear();
         m_SignalSemaphores.clear();
         m_SignalSemaphoreValues.clear();
-        
+
         return m_LastSubmittedID;
     }
 
@@ -268,7 +268,7 @@ namespace nvrhi::vulkan
         std::list<TrackedCommandBufferPtr> submissions = std::move(m_CommandBuffersInFlight);
 
         uint64_t lastFinishedID = updateLastFinishedID();
-        
+
         for (const TrackedCommandBufferPtr& cmd : submissions)
         {
             if (cmd->submissionID <= lastFinishedID)
@@ -282,7 +282,7 @@ namespace nvrhi::vulkan
                 if (!cmd->rtxmuBuildIds.empty())
                 {
                     std::lock_guard lockGuard(m_Context.rtxMuResources->asListMutex);
-                    
+
                     m_Context.rtxMuResources->asBuildsCompleted.insert(m_Context.rtxMuResources->asBuildsCompleted.end(),
                         cmd->rtxmuBuildIds.begin(), cmd->rtxmuBuildIds.end());
 
@@ -355,7 +355,7 @@ namespace nvrhi::vulkan
     {
         if (commandListID > m_LastSubmittedID || commandListID == 0)
             return false;
-        
+
         bool completed = getLastFinishedID() >= commandListID;
         if (completed)
             return true;
