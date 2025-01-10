@@ -527,6 +527,9 @@ namespace nvrhi::vulkan
             case RasterFillMode::Line:
                 return vk::PolygonMode::eLine;
 
+            case RasterFillMode::Point:
+                return vk::PolygonMode::ePoint;
+
             default:
                 assert(0);
                 return vk::PolygonMode::eFill;

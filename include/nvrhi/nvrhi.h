@@ -1041,6 +1041,7 @@ namespace nvrhi
     {
         Solid,
         Wireframe,
+        Point,
 
         // Vulkan names
         Fill = Solid,
@@ -1082,6 +1083,7 @@ namespace nvrhi
         constexpr RasterState& setFillMode(RasterFillMode value) { fillMode = value; return *this; }
         constexpr RasterState& setFillSolid() { fillMode = RasterFillMode::Solid; return *this; }
         constexpr RasterState& setFillWireframe() { fillMode = RasterFillMode::Wireframe; return *this; }
+        constexpr RasterState& setFillPoint() { fillMode = RasterFillMode::Point; return *this; }
         constexpr RasterState& setCullMode(RasterCullMode value) { cullMode = value; return *this; }
         constexpr RasterState& setCullBack() { cullMode = RasterCullMode::Back; return *this; }
         constexpr RasterState& setCullFront() { cullMode = RasterCullMode::Front; return *this; }
