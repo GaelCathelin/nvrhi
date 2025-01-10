@@ -117,7 +117,7 @@ namespace nvrhi::vulkan
 
         return c_FormatMap[uint32_t(format)].vkFormat;
     }
-    
+
     vk::SamplerAddressMode convertSamplerAddressMode(SamplerAddressMode mode)
     {
         switch(mode)
@@ -216,7 +216,7 @@ namespace nvrhi::vulkan
         vk::AccessFlags2 accessMask;
         vk::ImageLayout imageLayout;
 
-        ResourceStateMapping AsResourceStateMapping() const 
+        ResourceStateMapping AsResourceStateMapping() const
         {
             // It's safe to cast vk::AccessFlags2 -> vk::AccessFlags and vk::PipelineStageFlags2 -> vk::PipelineStageFlags (as long as the enum exist in both versions!),
             // synchronization2 spec says: "The new flags are identical to the old values within the 32-bit range, with new stages and bits beyond that."
@@ -479,7 +479,7 @@ namespace nvrhi::vulkan
         }
         }
     }
-    
+
     vk::PrimitiveTopology convertPrimitiveTopology(PrimitiveType topology)
     {
         switch(topology)
@@ -744,8 +744,9 @@ namespace nvrhi::vulkan
         static_assert(uint32_t(rt::AccelStructBuildFlags::PreferFastTrace) == uint32_t(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR));
         static_assert(uint32_t(rt::AccelStructBuildFlags::PreferFastBuild) == uint32_t(VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR));
         static_assert(uint32_t(rt::AccelStructBuildFlags::MinimizeMemory) == uint32_t(VK_BUILD_ACCELERATION_STRUCTURE_LOW_MEMORY_BIT_KHR));
+        static_assert(uint32_t(rt::AccelStructBuildFlags::AllowDataAccess) == uint32_t(VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_DATA_ACCESS_KHR));
 
-        return vk::BuildAccelerationStructureFlagsKHR(uint32_t(buildFlags) & 0x1f);
+        return vk::BuildAccelerationStructureFlagsKHR(uint32_t(buildFlags) & ~uint32_t(rt::AccelStructBuildFlags::AllowEmptyInstances));
 #else
         vk::BuildAccelerationStructureFlagsKHR flags = vk::BuildAccelerationStructureFlagBitsKHR(0);
         if ((buildFlags & rt::AccelStructBuildFlags::AllowUpdate) != 0)
@@ -758,6 +759,8 @@ namespace nvrhi::vulkan
             flags |= vk::BuildAccelerationStructureFlagBitsKHR::ePreferFastBuild;
         if ((buildFlags & rt::AccelStructBuildFlags::MinimizeMemory) != 0)
             flags |= vk::BuildAccelerationStructureFlagBitsKHR::eLowMemory;
+        if ((buildFlags & rt::AccelStructBuildFlags::AllowDataAccess) != 0)
+            flags |= vk::BuildAccelerationStructureFlagBitsKHR::eAllowDataAccess;
         return flags;
 #endif
     }
