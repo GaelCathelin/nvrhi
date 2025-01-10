@@ -1673,7 +1673,7 @@ namespace nvrhi
         static_assert(sizeof(InstanceDesc) == 64, "sizeof(InstanceDesc) is supposed to be 64 bytes");
         static_assert(sizeof(IndirectInstanceDesc) == sizeof(InstanceDesc));
 
-        enum class AccelStructBuildFlags : uint8_t
+        enum class AccelStructBuildFlags : uint16_t
         {
             None = 0,
             AllowUpdate = 1,
@@ -1682,6 +1682,7 @@ namespace nvrhi
             PreferFastBuild = 8,
             MinimizeMemory = 0x10,
             PerformUpdate = 0x20,
+            AllowDataAccess = 0x800,
 
             // Removes the errors or warnings that NVRHI validation layer issues when a TLAS
             // includes an instance that points at a NULL BLAS or has a zero instance mask.
