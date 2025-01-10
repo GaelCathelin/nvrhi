@@ -226,7 +226,7 @@ namespace nvrhi::vulkan
                                 .setPAttachments(attachmentViews.data())
                                 .setWidth(fb->framebufferInfo.width)
                                 .setHeight(fb->framebufferInfo.height)
-                                .setLayers(numArraySlices);
+                                .setLayers(attachmentViews.empty() ? 1 : numArraySlices);
 
         res = m_Context.device.createFramebuffer(&framebufferInfo, m_Context.allocationCallbacks,
                                                &fb->framebuffer);
