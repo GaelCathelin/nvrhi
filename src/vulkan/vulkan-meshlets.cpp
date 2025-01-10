@@ -142,6 +142,28 @@ namespace nvrhi::vulkan
                             .setSampleShadingEnable(rasterState.sampleShadingEnable)
                             .setMinSampleShading(1.0f);
 
+        vk::PipelineSampleLocationsStateCreateInfoEXT sampleLocationsState;
+        if (rasterState.programmableSamplePositionsEnable)
+        {
+            std::vector<vk::SampleLocationEXT> sampleLocations;
+            for (uint32_t i = 0; i < fb->framebufferInfo.sampleCount; i++)
+                sampleLocations.push_back(vk::SampleLocationEXT(
+                    rasterState.samplePositionsX[i] / 16.0f,
+                    rasterState.samplePositionsY[i] / 16.0f));
+
+            auto sampleLocationsInfo = vk::SampleLocationsInfoEXT()
+                                        .setSampleLocationGridSize(vk::Extent2D(1, 1))
+                                        .setSampleLocationsCount(fb->framebufferInfo.sampleCount)
+                                        .setSampleLocationsPerPixel(vk::SampleCountFlagBits(fb->framebufferInfo.sampleCount))
+                                        .setSampleLocations(sampleLocations);
+
+            sampleLocationsState = vk::PipelineSampleLocationsStateCreateInfoEXT()
+                                    .setSampleLocationsEnable(rasterState.programmableSamplePositionsEnable)
+                                    .setSampleLocationsInfo(sampleLocationsInfo);
+
+            multisample.setPNext(&sampleLocationsState);
+        }
+
         auto depthStencil = vk::PipelineDepthStencilStateCreateInfo()
                                 .setDepthTestEnable(depthStencilState.depthTestEnable)
                                 .setDepthWriteEnable(depthStencilState.depthWriteEnable)
