@@ -173,6 +173,7 @@ namespace nvrhi::vulkan
             bool EXT_opacity_micromap = false;
             bool NV_ray_tracing_invocation_reorder = false;
             bool EXT_debug_utils = false;
+            bool EXT_line_rasterization = false;
 #if NVRHI_WITH_AFTERMATH
             bool NV_device_diagnostic_checkpoints = false;
             bool NV_device_diagnostics_config= false;

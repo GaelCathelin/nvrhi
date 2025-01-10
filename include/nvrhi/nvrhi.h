@@ -2792,7 +2792,8 @@ namespace nvrhi
         ComputeQueue,
         CopyQueue,
         ConstantBufferRanges,
-        HeapDirectlyIndexed
+        HeapDirectlyIndexed,
+        LineRasterization
     };
 
     enum class MessageSeverity : uint8_t
