@@ -92,7 +92,7 @@ namespace nvrhi::utils
             bindingLayoutDesc.visibility = visibility;
             bindingLayoutDesc.registerSpace = registerSpace;
             convertSetToLayout(bindingSetDesc.bindings, bindingLayoutDesc.bindings);
-            
+
             bindingLayout = device->createBindingLayout(bindingLayoutDesc);
 
             if (!bindingLayout)
@@ -132,7 +132,7 @@ namespace nvrhi::utils
 
     void BuildBottomLevelAccelStruct(ICommandList* commandList, rt::IAccelStruct* as, const rt::AccelStructDesc& desc)
     {
-        commandList->buildBottomLevelAccelStruct(as, 
+        commandList->buildBottomLevelAccelStruct(as,
             desc.bottomLevelGeometries.data(),
             desc.bottomLevelGeometries.size(),
             desc.buildFlags);
@@ -275,13 +275,13 @@ namespace nvrhi::utils
         case HeapType::DeviceLocal:
             ss << "DeviceLocal";
             break;
-        case HeapType::Upload: 
+        case HeapType::Upload:
             ss << "Upload";
             break;
-        case HeapType::Readback: 
+        case HeapType::Readback:
             ss << "Readback";
             break;
-        default: 
+        default:
             ss << "Invalid-Type";
             break;
         }
@@ -321,7 +321,10 @@ namespace nvrhi::utils
 
         if (desc.dimension == TextureDimension::Texture2DMS ||
             desc.dimension == TextureDimension::Texture2DMSArray)
+        {
             ss << ", SampleCount = " << desc.sampleCount << ", SampleQuality = " << desc.sampleQuality;
+            if (desc.isSampleLocationsCompatible) ss << ", IsSampleLocationsCompatible";
+        }
 
         if (desc.isRenderTarget) ss << ", IsRenderTarget";
         if (desc.isUAV)          ss << ", IsUAV";
