@@ -1245,6 +1245,9 @@ namespace nvrhi
         SamplerAddressMode addressV = SamplerAddressMode::Clamp;
         SamplerAddressMode addressW = SamplerAddressMode::Clamp;
         SamplerReductionType reductionType = SamplerReductionType::Standard;
+        ComparisonFunc comparisonFunc = ComparisonFunc::GreaterOrEqual;
+        float minLod = 0.f;
+        float maxLod = std::numeric_limits<float>::max();
 
         SamplerDesc& setBorderColor(const Color& color) { borderColor = color; return *this; }
         SamplerDesc& setMaxAnisotropy(float value) { maxAnisotropy = value; return *this; }
@@ -1258,6 +1261,9 @@ namespace nvrhi
         SamplerDesc& setAddressW(SamplerAddressMode mode) { addressW = mode; return *this; }
         SamplerDesc& setAllAddressModes(SamplerAddressMode mode) { addressU = addressV = addressW = mode; return *this; }
         SamplerDesc& setReductionType(SamplerReductionType type) { reductionType = type; return *this; }
+        SamplerDesc& setComparisonFunc(ComparisonFunc func) { comparisonFunc = func; return *this; }
+        SamplerDesc& setMinLod(float value) { minLod = value; return *this; }
+        SamplerDesc& setMaxLod(float value) { maxLod = value; return *this; }
     };
 
     class ISampler : public IResource
