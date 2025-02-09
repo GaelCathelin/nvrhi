@@ -31,7 +31,7 @@ namespace nvrhi::vulkan
 
     MeshletPipelineHandle Device::createMeshletPipeline(const MeshletPipelineDesc& desc, IFramebuffer* _fb)
     {
-        if (!m_Context.extensions.NV_mesh_shader)
+        if (!m_Context.extensions.EXT_mesh_shader)
             utils::NotSupported();
 
         vk::Result res;
@@ -381,16 +381,9 @@ namespace nvrhi::vulkan
     {
         assert(m_CurrentCmdBuf);
 
-        if (groupsY > 1 || groupsZ > 1)
-        {
-            // only 1D dispatches are supported by Vulkan
-            utils::NotSupported();
-            return;
-        }
-
         updateMeshletVolatileBuffers();
 
-        m_CurrentCmdBuf->cmdBuf.drawMeshTasksNV(groupsX, 0);
+        m_CurrentCmdBuf->cmdBuf.drawMeshTasksEXT(groupsX, groupsY, groupsZ);
     }
 
 } // namespace nvrhi::vulkan
