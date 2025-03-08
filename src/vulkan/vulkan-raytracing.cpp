@@ -54,7 +54,7 @@ namespace nvrhi::vulkan
         return (vk::BuildMicromapFlagBitsEXT)flags;
     }
 
-    static const vk::MicromapUsageEXT* GetAsVkOpacityMicromapUsageCounts(const rt::OpacityMicromapUsageCount* counts) 
+    static const vk::MicromapUsageEXT* GetAsVkOpacityMicromapUsageCounts(const rt::OpacityMicromapUsageCount* counts)
     {
         static_assert(sizeof(rt::OpacityMicromapUsageCount) == sizeof(vk::MicromapUsageEXT));
         static_assert(offsetof(rt::OpacityMicromapUsageCount, count) == offsetof(vk::MicromapUsageEXT, count));
@@ -227,7 +227,7 @@ namespace nvrhi::vulkan
         OpacityMicromap* om = new OpacityMicromap();
         om->desc = desc;
         om->compacted = false;
-        
+
         BufferDesc bufferDesc;
         bufferDesc.canHaveUAVs = true;
         bufferDesc.byteSize = buildSize.micromapSize;
@@ -664,7 +664,7 @@ namespace nvrhi::vulkan
 
         if (performUpdate)
             buildInfo.setSrcAccelerationStructure(as->accelStruct);
-        
+
 #ifdef NVRHI_WITH_RTXMU
         commitBarriers();
 
@@ -684,7 +684,7 @@ namespace nvrhi::vulkan
 
 
             as->rtxmuId = accelStructsToBuild[0];
-            
+
             as->rtxmuBuffer = m_Context.rtxMemUtil->GetBuffer(as->rtxmuId);
             as->accelStruct = m_Context.rtxMemUtil->GetAccelerationStruct(as->rtxmuId);
             as->accelStructDeviceAddress = m_Context.rtxMemUtil->GetDeviceAddress(as->rtxmuId);
@@ -743,7 +743,7 @@ namespace nvrhi::vulkan
             m_Context.error(ss.str());
             return;
         }
-        
+
         assert(scratchBuffer->deviceAddress);
         buildInfo.setScratchData(scratchBuffer->deviceAddress + scratchOffset);
 
@@ -846,7 +846,7 @@ namespace nvrhi::vulkan
             m_Context.error(ss.str());
             return;
         }
-        
+
         assert(scratchBuffer->deviceAddress);
         buildInfo.setScratchData(scratchBuffer->deviceAddress + scratchOffset);
 
@@ -941,7 +941,7 @@ namespace nvrhi::vulkan
         commitBarriers();
 
         uint64_t currentVersion = MakeVersion(m_CurrentCmdBuf->recordingID, m_CommandListParameters.queueType, false);
-        
+
         buildTopLevelAccelStructInternal(as, instanceBuffer->deviceAddress + instanceBufferOffset, numInstances, buildFlags, currentVersion);
 
         if (as->desc.trackLiveness)
@@ -1149,7 +1149,7 @@ namespace nvrhi::vulkan
 
                 if ((layout->desc.visibility & ShaderType::AllRayTracing) == 0)
                     continue;
-                
+
                 setResourceStatesForBindingSet(state.bindings[i]);
             }
         }
@@ -1272,7 +1272,7 @@ namespace nvrhi::vulkan
             m_CurrentShaderTablePointers.callable = callableHandles;
             m_CurrentShaderTablePointers.version = shaderTable->version;
         }
-        
+
         commitBarriers();
 
         m_CurrentGraphicsState = GraphicsState();
@@ -1317,7 +1317,7 @@ namespace nvrhi::vulkan
     {
         if (!_shader)
             return;
-        
+
         Shader* shader = checked_cast<Shader*>(_shader);
         auto it = shaderStageIndices.find(shader);
         if (it == shaderStageIndices.end())
@@ -1358,7 +1358,7 @@ namespace nvrhi::vulkan
                 return nullptr;
             }
 
-            registerShaderModule(shaderDesc.shader, shaderStageIndices, numShaders, 
+            registerShaderModule(shaderDesc.shader, shaderStageIndices, numShaders,
                 numShadersWithSpecializations, numSpecializationConstants);
         }
 
@@ -1432,7 +1432,7 @@ namespace nvrhi::vulkan
         for (const auto& hitGroupDesc : desc.hitGroups)
         {
             auto shaderGroupCreateInfo = vk::RayTracingShaderGroupCreateInfoKHR()
-                .setType(hitGroupDesc.isProceduralPrimitive 
+                .setType(hitGroupDesc.isProceduralPrimitive
                     ? vk::RayTracingShaderGroupTypeKHR::eProceduralHitGroup
                     : vk::RayTracingShaderGroupTypeKHR::eTrianglesHitGroup)
                 .setGeneralShader(VK_SHADER_UNUSED_KHR)
@@ -1463,7 +1463,7 @@ namespace nvrhi::vulkan
             }
 
             assert(!hitGroupDesc.exportName.empty());
-            
+
             pso->shaderGroups[hitGroupDesc.exportName] = uint32_t(shaderGroups.size());
             shaderGroups.push_back(shaderGroupCreateInfo);
         }
@@ -1498,8 +1498,8 @@ namespace nvrhi::vulkan
 
         pso->shaderGroupHandles.resize(m_Context.rayTracingPipelineProperties.shaderGroupHandleSize * shaderGroups.size());
 
-        res = m_Context.device.getRayTracingShaderGroupHandlesKHR(pso->pipeline, 0, 
-            uint32_t(shaderGroups.size()), 
+        res = m_Context.device.getRayTracingShaderGroupHandlesKHR(pso->pipeline, 0,
+            uint32_t(shaderGroups.size()),
             pso->shaderGroupHandles.size(), pso->shaderGroupHandles.data());
 
         CHECK_VK_FAIL(res)
@@ -1646,7 +1646,7 @@ namespace nvrhi::vulkan
         callableShaders.clear();
         ++version;
     }
-    
+
     uint32_t ShaderTable::getNumEntries() const
     {
         return 1 + // rayGeneration

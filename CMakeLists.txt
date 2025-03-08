@@ -29,18 +29,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(CMakeDependentOption)
 
-option(NVRHI_BUILD_SHARED "Build NVRHI as a shared library (DLL or .so)" OFF)
-option(NVRHI_INSTALL "Generate install rules for NVRHI" ON)
+option(NVRHI_BUILD_SHARED "Build NVRHI as a shared library (DLL or .so)" ON)
+option(NVRHI_INSTALL "Generate install rules for NVRHI" OFF)
 cmake_dependent_option(NVRHI_INSTALL_EXPORTS "Install CMake exports" OFF "NVRHI_INSTALL" OFF)
 
 option(NVRHI_WITH_VALIDATION "Build NVRHI the validation layer" ON)
 option(NVRHI_WITH_VULKAN "Build the NVRHI Vulkan backend" ON)
-option(NVRHI_WITH_RTXMU "Use RTXMU for acceleration structure management" OFF)
+option(NVRHI_WITH_RTXMU "Use RTXMU for acceleration structure management" ON)
 option(NVRHI_WITH_AFTERMATH "Include Aftermath support (requires NSight Aftermath SDK)" OFF)
 
 cmake_dependent_option(NVRHI_WITH_NVAPI "Include NVAPI support (requires NVAPI SDK)" OFF "WIN32" OFF)
-cmake_dependent_option(NVRHI_WITH_DX11 "Build the NVRHI D3D11 backend" ON "WIN32" OFF)
-cmake_dependent_option(NVRHI_WITH_DX12 "Build the NVRHI D3D12 backend" ON "WIN32" OFF)
+cmake_dependent_option(NVRHI_WITH_DX11 "Build the NVRHI D3D11 backend" OFF "WIN32" OFF)
+cmake_dependent_option(NVRHI_WITH_DX12 "Build the NVRHI D3D12 backend" OFF "WIN32" OFF)
 
 if (NVRHI_BUILD_SHARED)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
