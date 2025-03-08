@@ -199,6 +199,7 @@ namespace nvrhi::vulkan
             const vk::DebugReportObjectTypeEXT objtypeEXT, const char* name) const;
         void error(const std::string& message) const;
         void warning(const std::string& message) const;
+        void info(const std::string& message) const;
     };
 
     // command buffer with resource tracking

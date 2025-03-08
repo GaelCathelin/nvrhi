@@ -653,4 +653,9 @@ namespace nvrhi::vulkan
     {
         messageCallback->message(MessageSeverity::Warning, message.c_str());
     }
+
+    void VulkanContext::info(const std::string& message) const
+    {
+        messageCallback->message(MessageSeverity::Info, message.c_str());
+    }
 } // namespace nvrhi::vulkan

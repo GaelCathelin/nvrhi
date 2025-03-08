@@ -292,6 +292,7 @@ namespace nvrhi::vulkan
                 {
                     m_Context.rtxMemUtil->GarbageCollection(cmd->rtxmuCompactionIds);
                     cmd->rtxmuCompactionIds.clear();
+                    m_Context.info(std::string("[RTXMU] Last compaction stats:\n") + m_Context.rtxMemUtil->GetLog());
                 }
 #endif
             }
