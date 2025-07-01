@@ -2885,6 +2885,7 @@ namespace nvrhi
         VariableRateShading,
         VirtualResources,
         WaveLaneCountMinMax,
+        LineRasterization
     };
 
     enum class MessageSeverity : uint8_t
