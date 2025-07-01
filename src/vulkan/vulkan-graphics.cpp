@@ -329,13 +329,26 @@ namespace nvrhi::vulkan
                             .setDepthBiasClamp(rasterState.depthBiasClamp)
                             .setDepthBiasSlopeFactor(rasterState.slopeScaledDepthBias)
                             .setLineWidth(1.0f);
-        
+        const void** rasterizerPNext = &rasterizer.pNext;
+
+        // Smooth rectangle lines state
+        vk::PipelineRasterizationLineStateCreateInfoEXT lineRasterizationState = vk::PipelineRasterizationLineStateCreateInfoEXT()
+            .setLineRasterizationMode(!rasterState.antialiasedLineEnable || blendState.alphaToCoverageEnable || rasterState.sampleShadingEnable ?
+                                          vk::LineRasterizationModeEXT::eDefault :
+                                          vk::LineRasterizationModeEXT::eRectangularSmooth)
+            .setPNext(*rasterizerPNext);
+        if (queryFeatureSupport(Feature::LineRasterization))
+        {
+            *rasterizerPNext = &lineRasterizationState;
+        }
+
         // Conservative raster state
         auto conservativeRasterState = vk::PipelineRasterizationConservativeStateCreateInfoEXT()
-            .setConservativeRasterizationMode(vk::ConservativeRasterizationModeEXT::eOverestimate);
+            .setConservativeRasterizationMode(vk::ConservativeRasterizationModeEXT::eOverestimate)
+            .setPNext(*rasterizerPNext);
 		if (rasterState.conservativeRasterEnable)
 		{
-			rasterizer.setPNext(&conservativeRasterState);
+		    *rasterizerPNext = &conservativeRasterState;
 		}
 
         auto multisample = vk::PipelineMultisampleStateCreateInfo()

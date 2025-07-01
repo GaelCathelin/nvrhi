@@ -92,6 +92,7 @@ namespace nvrhi::vulkan
             { VK_NV_CLUSTER_ACCELERATION_STRUCTURE_EXTENSION_NAME, &m_Context.extensions.NV_cluster_acceleration_structure },
             { VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME, &m_Context.extensions.EXT_mutable_descriptor_type },
             { VK_NV_COOPERATIVE_VECTOR_EXTENSION_NAME, &m_Context.extensions.NV_cooperative_vector },
+            { VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, &m_Context.extensions.EXT_line_rasterization },
 #if NVRHI_WITH_AFTERMATH
             { VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME, &m_Context.extensions.NV_device_diagnostic_checkpoints },
             { VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME, &m_Context.extensions.NV_device_diagnostics_config }
@@ -409,6 +410,8 @@ namespace nvrhi::vulkan
             return m_Context.extensions.NV_cooperative_vector && m_Context.coopVecFeatures.cooperativeVector;
         case Feature::CooperativeVectorTraining:
             return m_Context.extensions.NV_cooperative_vector && m_Context.coopVecFeatures.cooperativeVectorTraining;
+        case Feature::LineRasterization:
+            return m_Context.extensions.EXT_line_rasterization;
         default:
             return false;
         }

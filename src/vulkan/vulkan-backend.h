@@ -180,6 +180,7 @@ namespace nvrhi::vulkan
             bool EXT_mutable_descriptor_type = false;
             bool EXT_debug_utils = false;
             bool NV_cooperative_vector = false;
+            bool EXT_line_rasterization = false;
 #if NVRHI_WITH_AFTERMATH
             bool NV_device_diagnostic_checkpoints = false;
             bool NV_device_diagnostics_config= false;
