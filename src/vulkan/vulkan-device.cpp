@@ -91,6 +91,7 @@ namespace nvrhi::vulkan
             { VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME, &m_Context.extensions.EXT_mutable_descriptor_type },
             { VK_NV_COOPERATIVE_VECTOR_EXTENSION_NAME, &m_Context.extensions.NV_cooperative_vector },
             { VK_NV_RAY_TRACING_LINEAR_SWEPT_SPHERES_EXTENSION_NAME, &m_Context.extensions.NV_ray_tracing_linear_swept_spheres },
+            { VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, &m_Context.extensions.EXT_line_rasterization },
 #if NVRHI_WITH_AFTERMATH
             { VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME, &m_Context.extensions.NV_device_diagnostic_checkpoints },
             { VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME, &m_Context.extensions.NV_device_diagnostics_config }
@@ -413,6 +414,8 @@ namespace nvrhi::vulkan
             return m_Context.extensions.NV_ray_tracing_linear_swept_spheres && m_Context.linearSweptSpheresFeatures.spheres;
         case Feature::LinearSweptSpheres:
             return m_Context.extensions.NV_ray_tracing_linear_swept_spheres && m_Context.linearSweptSpheresFeatures.linearSweptSpheres;
+        case Feature::LineRasterization:
+            return m_Context.extensions.EXT_line_rasterization;
         default:
             return false;
         }
