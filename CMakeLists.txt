@@ -28,6 +28,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(CMakeDependentOption)
+include(FetchContent)
 
 option(NVRHI_BUILD_SHARED "Build NVRHI as a shared library (DLL or .so)" ON)
 option(NVRHI_INSTALL "Generate install rules for NVRHI" OFF)
@@ -58,11 +59,23 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if (NVRHI_WITH_VULKAN AND NOT TARGET Vulkan-Headers AND NOT TARGET Vulkan::Headers)
-    add_subdirectory(thirdparty/Vulkan-Headers)
+    FetchContent_Declare(
+        vulkan-headers
+        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+        GIT_TAG        v1.4.313
+        GIT_SHALLOW    ON
+    )
+    FetchContent_MakeAvailable(vulkan-headers)
 endif()
 
 if(NVRHI_WITH_DX12 AND NOT TARGET DirectX-Headers AND NOT TARGET Microsoft::DirectX-Headers)
-    add_subdirectory(thirdparty/DirectX-Headers)
+    FetchContent_Declare(
+        directx-headers
+        GIT_REPOSITORY https://github.com/microsoft/DirectX-Headers.git
+        GIT_TAG        v1.737.0-preview
+        GIT_SHALLOW    ON
+    )
+    FetchContent_MakeAvailable(directx-headers)
 endif()
 
 if (NVRHI_WITH_RTXMU)
