@@ -279,12 +279,6 @@ namespace nvrhi::vulkan
         }
     }
 
-    static vk::Viewport VKViewportWithDXCoords(const Viewport& v)
-    {
-        // requires VK_KHR_maintenance1 which allows negative-height to indicate an inverted coord space to match DX
-        return vk::Viewport(v.minX, v.maxY, v.maxX - v.minX, -(v.maxY - v.minY), v.minZ, v.maxZ);
-    }
-
     void CommandList::setMeshletState(const MeshletState& state)
     {
         assert(m_CurrentCmdBuf);
@@ -333,7 +327,8 @@ namespace nvrhi::vulkan
             nvrhi::static_vector<vk::Viewport, c_MaxViewports> viewports;
             for (const auto& vp : state.viewport.viewports)
             {
-                viewports.push_back(VKViewportWithDXCoords(vp));
+                // requires VK_KHR_maintenance1 which allows negative-height to indicate an inverted coord space to match DX
+                viewports.push_back(vk::Viewport(vp.minX, vp.maxY, vp.maxX - vp.minX, -(vp.maxY - vp.minY), vp.minZ, vp.maxZ));
             }
 
             m_CurrentCmdBuf->cmdBuf.setViewport(0, uint32_t(viewports.size()), viewports.data());
