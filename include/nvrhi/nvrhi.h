@@ -3216,6 +3216,12 @@ namespace nvrhi
         virtual void resolveTexture(ITexture* dest, const TextureSubresourceSet& dstSubresources, ITexture* src,
             const TextureSubresourceSet& srcSubresources) = 0;
 
+        // Performs a linear blit operation from subresources of a texture 'src' into matching subresources of 'dst'.
+        // - Vulkan: maps to a single vkCmdBlitImage call.
+        // - DX11/12: not implemented.
+        virtual void blitTexture(ITexture* dest, const TextureSubresourceSet& dstSubresources, ITexture* src,
+            const TextureSubresourceSet& srcSubresources) = 0;
+
         // Uploads 'dataSize' bytes of data from CPU memory into the GPU buffer 'b' at offset 'destOffsetBytes'.
         // - DX11: If the buffer's 'cpuAccess' mode is set to Write, maps the buffer and uploads the data that way.
         //   Otherwise, uses UpdateSubresource.

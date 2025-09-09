@@ -585,6 +585,56 @@ namespace nvrhi::vulkan
         m_CurrentCmdBuf->cmdBuf.resolveImage(src->image, vk::ImageLayout::eTransferSrcOptimal, dest->image, vk::ImageLayout::eTransferDstOptimal, regions);
     }
 
+    void CommandList::blitTexture(ITexture* _dest, const TextureSubresourceSet& dstSubresources, ITexture* _src, const TextureSubresourceSet& srcSubresources)
+    {
+        endRenderPass();
+
+        Texture* dest = checked_cast<Texture*>(_dest);
+        Texture* src = checked_cast<Texture*>(_src);
+
+        TextureSubresourceSet dstSR = dstSubresources.resolve(dest->desc, false);
+        TextureSubresourceSet srcSR = srcSubresources.resolve(src->desc, false);
+
+        if (dstSR.numArraySlices != srcSR.numArraySlices || dstSR.numMipLevels != srcSR.numMipLevels)
+            // let the validation layer handle the messages
+            return;
+
+        m_CurrentCmdBuf->referencedResources.push_back(dest);
+        m_CurrentCmdBuf->referencedResources.push_back(src);
+
+        assert(m_CurrentCmdBuf);
+
+        std::vector<vk::ImageBlit> regions;
+
+        for (MipLevel mipLevel = 0; mipLevel < dstSR.numMipLevels; mipLevel++)
+        {
+            vk::ImageSubresourceLayers dstLayers(vk::ImageAspectFlagBits::eColor, mipLevel + dstSR.baseMipLevel, dstSR.baseArraySlice, dstSR.numArraySlices);
+            vk::ImageSubresourceLayers srcLayers(vk::ImageAspectFlagBits::eColor, mipLevel + srcSR.baseMipLevel, srcSR.baseArraySlice, srcSR.numArraySlices);
+
+            regions.push_back(vk::ImageBlit()
+                .setSrcSubresource(srcLayers)
+                .setDstSubresource(dstLayers)
+                .setSrcOffsets({ vk::Offset3D(0, 0, 0), vk::Offset3D(
+                    std::max(src->desc.width >> srcLayers.mipLevel, 1u),
+                    std::max(src->desc.height >> srcLayers.mipLevel, 1u),
+                    std::max(src->desc.depth >> srcLayers.mipLevel, 1u)) })
+                .setDstOffsets({ vk::Offset3D(0, 0, 0), vk::Offset3D(
+                    std::max(dest->desc.width >> dstLayers.mipLevel, 1u),
+                    std::max(dest->desc.height >> dstLayers.mipLevel, 1u),
+                    std::max(dest->desc.depth >> dstLayers.mipLevel, 1u)) }));
+        }
+
+
+        if (m_EnableAutomaticBarriers)
+        {
+            requireTextureState(src, srcSR, ResourceStates::CopySource);
+            requireTextureState(dest, dstSR, ResourceStates::CopyDest);
+        }
+        commitBarriers();
+
+        m_CurrentCmdBuf->cmdBuf.blitImage(src->image, vk::ImageLayout::eTransferSrcOptimal, dest->image, vk::ImageLayout::eTransferDstOptimal, regions.size(), regions.data(), vk::Filter::eLinear);
+    }
+
     void CommandList::clearTexture(ITexture* _texture, TextureSubresourceSet subresources, const vk::ClearColorValue& clearValue)
     {
         endRenderPass();
