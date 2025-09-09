@@ -422,6 +422,61 @@ namespace nvrhi::validation
         m_CommandList->resolveTexture(dest, dstSubresources, src, srcSubresources);
     }
 
+    void CommandListWrapper::blitTexture(ITexture* dest, const TextureSubresourceSet& dstSubresources, ITexture* src, const TextureSubresourceSet& srcSubresources)
+    {
+        if (!requireOpenState())
+            return;
+
+        if (!requireType(CommandQueue::Graphics, "blitTexture"))
+            return;
+
+        bool anyErrors = false;
+
+        if (!dest)
+        {
+            error("blitTexture: dest is NULL");
+            anyErrors = true;
+        }
+
+        if (!src)
+        {
+            error("blitTexture: src is NULL");
+            anyErrors = true;
+        }
+
+        if (anyErrors)
+            return;
+
+        const TextureDesc& dstDesc = dest->getDesc();
+        const TextureDesc& srcDesc = src->getDesc();
+
+        TextureSubresourceSet dstSR = dstSubresources.resolve(dstDesc, false);
+        TextureSubresourceSet srcSR = srcSubresources.resolve(srcDesc, false);
+
+        if (dstSR.numArraySlices != srcSR.numArraySlices || dstSR.numMipLevels != srcSR.numMipLevels)
+        {
+            error("blitTexture: source and destination subresource sets must resolve to sets of the same size");
+            anyErrors = true;
+        }
+
+        if (dstDesc.sampleCount != 1)
+        {
+            error("blitTexture: destination texture must not be multi-sampled");
+            anyErrors = true;
+        }
+
+        if (srcDesc.sampleCount != 1)
+        {
+            error("blitTexture: source texture must not be multi-sampled");
+            anyErrors = true;
+        }
+
+        if (anyErrors)
+            return;
+
+        m_CommandList->blitTexture(dest, dstSubresources, src, srcSubresources);
+    }
+
     void CommandListWrapper::writeBuffer(IBuffer* b, const void* data, size_t dataSize, uint64_t destOffsetBytes)
     {
         if (!requireOpenState())
