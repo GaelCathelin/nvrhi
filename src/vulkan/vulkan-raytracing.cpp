@@ -1626,7 +1626,7 @@ namespace nvrhi::vulkan
             .setAllowClusterAccelerationStructure(true);
 
         auto pipelineFlags2 = vk::PipelineCreateFlags2CreateInfoKHR();
-        pipelineFlags2.setFlags(vk::PipelineCreateFlagBits2::eRayTracingAllowSpheresAndLinearSweptSpheresNV);
+//        pipelineFlags2.setFlags(vk::PipelineCreateFlagBits2::eRayTracingAllowSpheresAndLinearSweptSpheresNV);
 
         auto pipelineInfo = vk::RayTracingPipelineCreateInfoKHR()
             .setStages(shaderStages)
